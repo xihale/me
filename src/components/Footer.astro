@@ -1,0 +1,36 @@
+---
+import { asset } from '../data/asset';
+
+interface Props {
+  current?: 'home' | 'movies' | 'bangumi' | string;
+}
+
+const { current = '' } = Astro.props;
+
+const internal = [
+  { id: 'home', label: '首页', href: asset('') },
+  { id: 'movies', label: '电影', href: asset('movies') },
+  { id: 'bangumi', label: '清单', href: asset('bangumi') },
+];
+
+const external = [
+  { label: 'GitHub ↗', href: 'https://github.com/xihale' },
+  { label: 'Blog ↗', href: 'https://xihale.top' },
+  { label: 'Bangumi ↗', href: 'https://bgm.tv/user/xihale' },
+  { label: '豆瓣 ↗', href: 'https://movie.douban.com/people/xihale/' },
+  { label: 'X ↗', href: 'https://x.com/xihale' },
+];
+---
+<footer>
+  <div class="wrap foot">
+    <p class="mono">xihale · 2026</p>
+    <nav class="mono links" aria-label="全站与站外链接">
+      {internal.filter((item) => item.id !== current).map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+      {external.map((item) => (
+        <a href={item.href} target="_blank" rel="noopener">{item.label}</a>
+      ))}
+    </nav>
+  </div>
+</footer>

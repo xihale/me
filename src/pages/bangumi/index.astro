@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
 import { shelves, byScore } from '../../data/books';
 import { asset } from '../../data/asset';
 ---
@@ -17,10 +18,10 @@ import { asset } from '../../data/asset';
             <p class="meta mono">{list.length} 部</p>
           </div>
           <div class="body rv">
-            <div class="rack">
+            <div class:list={['rack', { square: anchor === 'albums' }]}>
               {byScore(list).map((x) => (
-                <a class="fig" href={x.url} target="_blank" rel="noopener">
-                  <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
+                <a class="fig" href={x.url} target="_blank" rel="noopener" title={x.title}>
+                  <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height={anchor === 'albums' ? '360' : '540'} />
                   <span class="cap">
                     <i>{x.score || '—'}</i>
                     <b>{x.title}</b>
@@ -34,16 +35,7 @@ import { asset } from '../../data/asset';
     </div>
   </main>
 
-  <footer>
-    <div class="wrap foot">
-      <p class="mono">xihale · 2026</p>
-      <p class="mono links">
-        <a href={asset('movies')}>电影 ↗</a>
-        <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
-        <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
-      </p>
-    </div>
-  </footer>
+  <Footer current="bangumi" />
 
   <script>
     import { initChrome } from '../../scripts/chrome';

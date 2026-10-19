@@ -112,6 +112,8 @@ html.js .rv.in { opacity: 1; transform: none; }
   .cabinet .ty { animation: none !important; width: 260px !important; }
   .cabinet .cur { animation: none !important; }
   .bar, .theme { transition: none; }
+  .poster img, .track img, .fig img { transition: none; transform: none !important; }
+  .poster .tip, .fig .tip { transition: none; transform: none !important; }
 }
 @media (max-width: 640px) {
   .bar { padding-inline: 1rem; }
@@ -274,23 +276,30 @@ html.js .rv.in { opacity: 1; transform: none; }
 .wall-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.6rem, 1.6vw, 1.4rem); }
 @media (max-width: 640px) { .wall-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .fig { display: block; position: relative; }
-.fig img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; background: var(--accent-soft); }
+.fig img {
+  display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; background: var(--accent-soft);
+  filter: grayscale(1) contrast(1.05); opacity: 0.88; transform: scale(1);
+  transition: filter 0.4s, opacity 0.4s, transform 0.5s;
+}
+.fig:hover img, .fig:focus-visible img { filter: none; opacity: 1; transform: scale(1.03); }
 .fig .cap { display: flex; gap: 0.6rem; align-items: baseline; margin-top: 0.6rem; font-size: 0.8125rem; line-height: 1.4; }
 .fig .cap i { font-style: normal; font-family: var(--mono); color: var(--accent); white-space: nowrap; }
 .fig .cap b { font-weight: 400; color: var(--muted); transition: color 0.2s; }
-.fig:hover .cap b { color: var(--ink); }
+.fig:hover .cap b, .fig:focus-visible .cap b { color: var(--accent); }
 .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 0.5rem; margin-top: 0.85rem; }
 .wall.small { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 .poster { position: relative; display: block; overflow: hidden; background: var(--accent-soft); }
-.poster img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; filter: grayscale(1) contrast(1.05); opacity: 0.85; transition: filter 0.4s, opacity 0.4s, transform 0.5s; }
+.poster img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; filter: grayscale(1) contrast(1.05); opacity: 0.85; transform: scale(1); transition: filter 0.4s, opacity 0.4s, transform 0.5s; }
 .poster:hover img, .poster:focus-visible img { filter: none; opacity: 1; transform: scale(1.04); }
-.poster .tip {
+.poster .tip, .fig .tip {
   position: absolute; inset: auto 0 0 0; padding: 1.6rem 0.45rem 0.4rem;
   font-size: 0.8125rem; line-height: 1.45; color: #fff;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
   opacity: 0; transform: translateY(4px); transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
 }
-.poster:hover .tip, .poster:focus-visible .tip { opacity: 1; transform: none; }
+.poster:hover .tip, .poster:focus-visible .tip,
+.fig:hover .tip, .fig:focus-visible .tip { opacity: 1; transform: none; }
 .poster .score { position: absolute; top: 0; left: 0; background: var(--bg); color: var(--accent); font: 400 0.8125rem/1.2 var(--mono); padding: 0.18rem 0.32rem; }
 .poster.more { display: grid; place-items: center; aspect-ratio: 2 / 3; border: 1px solid var(--line); background: none; }
 .poster.more span { font-family: var(--mono); font-size: 0.8125rem; color: var(--muted); transition: color 0.2s; }
@@ -299,8 +308,12 @@ html.js .rv.in { opacity: 1; transform: none; }
 .shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 4vw, 3rem); }
 @media (max-width: 640px) { .shelf { grid-template-columns: 1fr; } }
 
-/* ---------- movies ---------- */
+/* ---------- movies & racks ---------- */
 .rack { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: clamp(0.85rem, 2vw, 1.5rem); }
+.rack.square { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.rack.square .fig img, #albums .fig img { aspect-ratio: 1 / 1; }
+.rack .poster .tip, .rack .fig .tip { padding: 2.2rem 0.75rem 0.65rem; font-size: 0.875rem; line-height: 1.4; }
+.group { scroll-margin-top: calc(var(--bar) + 1.2rem); }
 .group + .group { margin-top: clamp(2.6rem, 5vw, 4.2rem); }
 .rail .meta { margin-top: 0.9rem; color: var(--faint); line-height: 1.7; }
 .sec.paged { padding-top: clamp(3rem, 6vw, 5rem); }
@@ -310,7 +323,7 @@ html.js .rv.in { opacity: 1; transform: none; }
 /* ---------- music ---------- */
 .tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: clamp(1rem, 2.2vw, 1.6rem) clamp(0.75rem, 1.8vw, 1.25rem); }
 .track { display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; }
-.track img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; background: var(--accent-soft); filter: grayscale(1) contrast(1.05); opacity: 0.88; transition: filter 0.4s, opacity 0.4s, transform 0.5s; }
+.track img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; background: var(--accent-soft); filter: grayscale(1) contrast(1.05); opacity: 0.88; transform: scale(1); transition: filter 0.4s, opacity 0.4s, transform 0.5s; }
 .track:hover img, .track:focus-visible img { filter: none; opacity: 1; transform: scale(1.03); }
 .track .t { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
 .track .t b { font-weight: 400; font-size: 0.8125rem; line-height: 1.4; overflow-wrap: anywhere; transition: color 0.2s; }
@@ -323,7 +336,8 @@ html.js .rv.in { opacity: 1; transform: none; }
 
 /* 触屏没有 hover,海报/封面直接显示原色 */
 @media (hover: none) {
-  .poster img, .track img { filter: none; opacity: 1; }
+  .poster img, .track img, .fig img { filter: none; opacity: 1; }
+  .rack .poster .tip, .rack .fig .tip { opacity: 1; transform: none; }
 }
 
 
