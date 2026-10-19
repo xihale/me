@@ -4,11 +4,13 @@ import Header from '../../components/Header.astro';
 import { asset } from '../../data/asset';
 import { movies, douban, movieCover, byStars } from '../../data/movies';
 
-const nums = ['壹', '贰', '叁', '肆'];
+const nums = ['壹', '贰', '叁'];
 
-const groups = [byStars(5), byStars(4), byStars(3), byStars(0)]
+const groups = [byStars(5), byStars(4), byStars(3)]
   .filter((list) => list.length)
   .map((list, i) => [nums[i], list] as const);
+const unrated = byStars(0);
+if (unrated.length) groups.push(['朦', unrated] as const);
 const last = movies.reduce((a, b) => (a.date > b.date ? a : b));
 ---
 <Base title="电影 · xihale" description={`豆瓣看过的电影 ${movies.length} 部，按分数分组。`}>
