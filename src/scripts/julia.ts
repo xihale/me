@@ -4,9 +4,10 @@ const FS = `
 precision highp float;
 uniform vec2 uRes; uniform float uT; uniform vec2 uM; uniform vec2 uView;
 uniform vec3 uBg, uInk, uAcc;
+uniform float uScale;
 void main(){
   vec2 p = (gl_FragCoord.xy - uRes * uView) / min(uRes.x * 0.8, uRes.y);
-  p *= 2.5;
+  p *= uScale;
   float a = uT * 0.045 + 2.2 + uM.x * 0.35;
   float r = 0.7885 + uM.y * 0.03;
   vec2 c = r * vec2(cos(a), sin(a));
@@ -58,9 +59,9 @@ export function initJulia(canvas: HTMLCanvasElement) {
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   const U = (n: string) => gl.getUniformLocation(prog, n);
-  const uRes = U('uRes'), uT = U('uT'), uM = U('uM'), uBg = U('uBg'), uInk = U('uInk'), uAcc = U('uAcc'), uView = U('uView');
+  const uRes = U('uRes'), uT = U('uT'), uM = U('uM'), uBg = U('uBg'), uInk = U('uInk'), uAcc = U('uAcc'), uView = U('uView'), uScale = U('uScale');
 
-  // 窄屏画布转了 90°,视角中心回到画面中央,分形才不会挤在一边
+  // 窄屏画布转了 90°,视角中心回到画面中央,分形放大并稍微超出屏幕边缘
   const narrow = matchMedia('(max-width: 860px)');
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,6 +84,7 @@ export function initJulia(canvas: HTMLCanvasElement) {
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform2f(uRes, canvas.width, canvas.height);
     gl.uniform2f(uView, narrow.matches ? 0.5 : 0.68, 0.5);
+    gl.uniform1f(uScale, narrow.matches ? 1.65 : 2.5);
   };
   const draw = (now: number) => {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -104,11 +106,14 @@ export function initJulia(canvas: HTMLCanvasElement) {
   colors(); resize(); draw(last);
   canvas.classList.add('on');
   if (reduce) {
-    addEventListener('resize', () => { resize(); draw(performance.now()); });
+    const onResize = () => { resize(); draw(performance.now()); };
+    addEventListener('resize', onResize);
+    narrow.addEventListener('change', onResize);
     new MutationObserver(() => { colors(); draw(performance.now()); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return;
   }
   addEventListener('resize', resize);
+  narrow.addEventListener('change', resize);
   if (touch) {
     let press = 0;
     const release = () => { clearTimeout(press); want = 1; };

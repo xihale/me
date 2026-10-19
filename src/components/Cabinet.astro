@@ -16,7 +16,15 @@ const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89],
       ))}
     </div>
     <div class="live" aria-live="polite">
-      <p class="mono dim" id="cap-i"></p>
+      <div class="live-meta">
+        <p class="mono dim" id="cap-i"></p>
+        <div class="meter mono dim" id="cap-meter" aria-hidden="true">
+          <span id="cap-step">01 / 07</span>
+          <span class="gauge">
+            {devices.map((_, idx) => <i class:list={['g-bar', { on: idx === 0 }]} data-idx={idx} />)}
+          </span>
+        </div>
+      </div>
       <h3 id="cap-n"></h3>
     </div>
   </div>

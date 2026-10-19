@@ -5,6 +5,8 @@ export function initCabinet() {
   if (!root) return;
   const devs: Dev[] = JSON.parse(document.getElementById('dev-data')!.textContent || '[]');
   const i = document.getElementById('cap-i')!, n = document.getElementById('cap-n')!;
+  const step = document.getElementById('cap-step');
+  const gBars = [...root.querySelectorAll<HTMLElement>('.g-bar')];
   const els = [...root.querySelectorAll<SVGGElement>('.dev')];
   const scrollx = root.querySelector<HTMLElement>('.scrollx');
   const marks = [...root.querySelectorAll<HTMLElement>('.snap')];
@@ -15,11 +17,15 @@ export function initCabinet() {
   let queued = 0;
 
   const show = (k: number | null) => {
-    els.forEach((e, j) => e.classList.toggle('on', j === k));
-    if (k === null) { i.textContent = ''; n.textContent = ''; return; }
-    const d = devs[k];
-    i.textContent = `${String(k + 1).padStart(2, '0')} · ${d.kind}`;
-    n.textContent = d.name;
+    const idx = k ?? 0;
+    els.forEach((e, j) => e.classList.toggle('on', j === idx));
+    const d = devs[idx];
+    if (d) {
+      i.textContent = `${String(idx + 1).padStart(2, '0')} · ${d.kind}`;
+      n.textContent = d.name;
+      if (step) step.textContent = `${String(idx + 1).padStart(2, '0')} / 07`;
+      gBars.forEach((b, j) => b.classList.toggle('on', j === idx));
+    }
   };
 
   els.forEach((e, k) => {
@@ -36,9 +42,21 @@ export function initCabinet() {
     });
   });
 
-  root.addEventListener('pointerleave', () => { if (!narrow.matches) show(null); });
+  gBars.forEach((bar, idx) => {
+    bar.addEventListener('click', () => {
+      if (!scrollx || !marks[idx]) return;
+      const m = marks[idx];
+      const box = scrollx.getBoundingClientRect();
+      scrollx.scrollTo({
+        left: m.getBoundingClientRect().left - box.left + scrollx.scrollLeft - scrollx.clientWidth / 2,
+        behavior: 'smooth',
+      });
+    });
+  });
+
+  root.addEventListener('pointerleave', () => { if (!narrow.matches) show(0); });
   root.addEventListener('focusout', (ev) => {
-    if (!narrow.matches && !root.contains((ev as FocusEvent).relatedTarget as Node)) show(null);
+    if (!narrow.matches && !root.contains((ev as FocusEvent).relatedTarget as Node)) show(0);
   });
 
   // 按图形算每件的中心点,并补出两端可居中的余量
@@ -76,6 +94,7 @@ export function initCabinet() {
   addEventListener('resize', () => { place(); sync(); });
   narrow.addEventListener('change', () => { place(); sync(); });
   place();
+  show(0);
   if (scrollx && narrow.matches && marks.length) {
     const box = scrollx.getBoundingClientRect();
     scrollx.scrollLeft = marks[0].getBoundingClientRect().left - box.left + scrollx.scrollLeft - scrollx.clientWidth / 2;
@@ -110,6 +129,32 @@ export function initProjects() {
   const pd = peek.querySelector('.pd') as HTMLElement;
   const ph = peek.querySelector('.ph') as HTMLElement;
   const fine = matchMedia('(hover: hover) and (min-width: 861px)');
+
+  const sheet = document.getElementById('sheet') as HTMLDialogElement | null;
+  const sImg = document.getElementById('sheet-img');
+  const sCat = document.getElementById('sheet-cat');
+  const sHost = document.getElementById('sheet-host');
+  const sName = document.getElementById('sheet-name');
+  const sDesc = document.getElementById('sheet-desc');
+  const sBtn = document.getElementById('sheet-btn') as HTMLAnchorElement | null;
+  const sClose = document.getElementById('sheet-close');
+
+  if (sheet) {
+    sClose?.addEventListener('click', () => sheet.close());
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      sheet.addEventListener('click', (event) => {
+        if (event.target !== sheet) return;
+        const rect = sheet.getBoundingClientRect();
+        const inContent =
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width;
+        if (!inContent) sheet.close();
+      });
+    }
+  }
+
   const open = (t: HTMLElement) => {
     if (!fine.matches) return;
     const d = t.dataset;
@@ -127,11 +172,24 @@ export function initProjects() {
     peek.classList.add('show');
   };
   const close = () => peek.classList.remove('show');
+
   tiles.forEach((t) => {
     t.addEventListener('pointerenter', () => open(t));
     t.addEventListener('focus', () => open(t));
     t.addEventListener('pointerleave', close);
     t.addEventListener('blur', close);
+    t.addEventListener('click', (ev) => {
+      if (fine.matches || !sheet) return;
+      ev.preventDefault();
+      const d = t.dataset;
+      if (sImg) sImg.innerHTML = d.img ? `<img src="${d.img}" alt="${d.name}" />` : `<b>${d.sym}</b>`;
+      if (sCat) sCat.textContent = `${t.querySelector('.n')?.textContent || ''} · ${d.cat || ''}`;
+      if (sHost) sHost.textContent = d.host || '';
+      if (sName) sName.textContent = d.name || '';
+      if (sDesc) sDesc.textContent = d.desc || '';
+      if (sBtn) sBtn.href = t.href;
+      sheet.showModal();
+    });
   });
   addEventListener('scroll', close, { passive: true });
 }

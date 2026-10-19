@@ -189,6 +189,25 @@ const shelfGroups = [
     <p class="ph mono"></p>
   </aside>
 
+  <dialog id="sheet" class="sheet" closedby="any" aria-label="项目详情">
+    <div class="sheet-box">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <button class="sheet-close" id="sheet-close" type="button" aria-label="关闭详情">✕</button>
+      <div class="sheet-media">
+        <div class="sheet-img" id="sheet-img"></div>
+      </div>
+      <div class="sheet-body">
+        <div class="sheet-meta mono">
+          <span class="sheet-cat mono dim" id="sheet-cat"></span>
+          <span class="sheet-host mono" id="sheet-host"></span>
+        </div>
+        <h3 class="sheet-name" id="sheet-name"></h3>
+        <p class="sheet-desc" id="sheet-desc"></p>
+        <a class="sheet-btn mono" id="sheet-btn" href="#" target="_blank" rel="noopener">访问项目 ↗</a>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     import { initJulia } from '../scripts/julia';
     import { initCabinet, initProjects } from '../scripts/ui';
