@@ -2,7 +2,7 @@ export type Device = { kind: string; name: string };
 export const devices: Device[] = [
   { kind: '电脑', name: '机械革命 Yaoshi15Pro Series（GM5PQ0A）' },
   { kind: '平板', name: 'Mi Pad 6 Pro' },
-  { kind: '阅读器', name: 'Kindle KWP3' },
+  { kind: '阅读器', name: 'Kindle KPW3' },
   { kind: '手机', name: 'iPhone 7s' },
   { kind: '手机', name: 'Redmi Turbo 4 Pro' },
   { kind: '手机', name: 'HONOR 9X Pro' },
