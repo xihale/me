@@ -12,6 +12,7 @@ xihale 的个人主页 —— Astro 静态站点。现代极简，中性色打�
 - **书**：Bangumi 优先，Bangumi 没有条目的用豆瓣「读过」补充（`src/data/books.ts` 合并两源；豆瓣独有的封面在 `public/img/books/<豆瓣 subject id>.webp`，星级 ×2 折成十分制）。
 - **清单子页**：`/bangumi` 收录全部书（32）、游戏（6）、专辑（13）（未评分显示 `—`）；首页每格只放评分最高的 12 部，其余走「更多」卡片。
 - **音乐**：网易云单曲，`src/data/music.ts`；封面在 `public/img/music/<song id>.webp`。
+- **字体**：Noto Serif SC 每个字重用 cn-font-split 预切成 86 个 `unicode-range` 分片（`public/fonts/noto-serif-sc/<字重>/`，`npm run fonts` 重新生成），浏览器只下载页面实际用到的分片；拉丁字符仍走 @fontsource 的小子集。
 
 ## 开发
 
@@ -19,6 +20,7 @@ xihale 的个人主页 —— Astro 静态站点。现代极简，中性色打�
 npm install
 npm run dev      # http://localhost:4321
 npm run build    # 输出到 dist/
+npm run fonts    # 重新生成 Noto Serif SC 分片（public/fonts/，改动字体或分片参数后跑一次）
 ```
 
 ## 内容

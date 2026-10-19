@@ -1,14 +1,13 @@
 ---
 import '@fontsource/noto-serif-sc/latin-300.css';
 import '@fontsource/noto-serif-sc/latin-500.css';
-import '@fontsource/noto-serif-sc/chinese-simplified-300.css';
-import '@fontsource/noto-serif-sc/chinese-simplified-500.css';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/global.css';
 
 const { title, description } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const fontCss = (w: 300 | 500) => `${base}/fonts/noto-serif-sc/${w}/result.css`;
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -22,6 +21,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d0e0e" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <link rel="stylesheet" href={fontCss(300)} />
+    <link rel="stylesheet" href={fontCss(500)} />
     <script is:inline>
       (function () {
         document.documentElement.classList.add('js');
