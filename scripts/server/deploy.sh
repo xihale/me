@@ -91,6 +91,12 @@ say "published $(git rev-parse --short HEAD) → $DEST (attic: $(du -sh "$ATTIC"
 say "=== deploy done ==="
 if [ -e "$RERUN" ]; then
   rm -f "$RERUN"
+  # ZP_PUSH_SHA here still holds the FIRST delivery's sha. main has moved past
+  # it, so pinning the rerun to it can never succeed — it just retries 5x and
+  # FATALs (2026-10-19: rerun for ad7e896 while main was already 1650de2).
+  # Latest-wins: drop the pin so the rerun deploys whatever main is at fetch
+  # time; the publish line logs the real sha.
+  unset ZP_PUSH_SHA
   say "a newer push arrived during this deploy — running again"
   exec /bin/bash "$0" "$REF"
 fi
