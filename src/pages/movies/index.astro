@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { asset } from '../../data/asset';
+import { movies, douban, movieCover, byStars } from '../../data/movies';
+
+const nums = ['壹', '贰', '叁', '肆'];
+
+const groups = [byStars(5), byStars(4), byStars(3), byStars(0)]
+  .filter((list) => list.length)
+  .map((list, i) => [nums[i], list] as const);
+const last = movies.reduce((a, b) => (a.date > b.date ? a : b));
+---
+<Base title="电影 · xihale" description={`豆瓣看过的电影 ${movies.length} 部，按分数分组。`}>
+  <Header brandHref={asset('')} nav={[{ label: '首页', href: asset('') }, { label: '分档', href: '#all' }]} />
+
+  <main id="top">
+    <div class="wrap">
+      <section class="sec paged" id="all">
+        <div class="rail rv">
+          <span class="no mono">豆瓣</span>
+          <h2>电影</h2>
+          <p class="meta mono">最近 {last.date}</p>
+        </div>
+        <div class="body">
+          {groups.map(([label, list]) => (
+            <div class="group rv">
+              <h3 class="sub">{label}</h3>
+              <div class="rack">
+                {list.map((m) => (
+                  <a class="fig" href={douban(m.id)} target="_blank" rel="noopener">
+                    <img src={asset(movieCover(m.id))} alt={m.name} loading="lazy" decoding="async" width="270" height="381" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <p class="mono">xihale · 2026</p>
+      <p class="mono links">
+        <a href={asset('bangumi')}>清单 ↗</a>
+        <a href="https://movie.douban.com/people/xihale/" target="_blank" rel="noopener">豆瓣 ↗</a>
+        <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    import { initChrome } from '../../scripts/chrome';
+    initChrome();
+  </script>
+</Base>

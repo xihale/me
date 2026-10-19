@@ -1,26 +1,86 @@
-type Dev = { kind: string; name: string; on: string };
+type Dev = { kind: string; name: string };
 
 export function initCabinet() {
   const root = document.getElementById('cabinet');
   if (!root) return;
   const devs: Dev[] = JSON.parse(document.getElementById('dev-data')!.textContent || '[]');
-  const i = document.getElementById('cap-i')!, n = document.getElementById('cap-n')!, on = document.getElementById('cap-on')!;
+  const i = document.getElementById('cap-i')!, n = document.getElementById('cap-n')!;
   const els = [...root.querySelectorAll<SVGGElement>('.dev')];
+  const scrollx = root.querySelector<HTMLElement>('.scrollx');
+  const marks = [...root.querySelectorAll<HTMLElement>('.snap')];
+  const svg = root.querySelector<SVGSVGElement>('svg');
+  const stage = root.querySelector<HTMLElement>('.stage');
+  // 窄屏:一件一屏,标题跟随居中那一件
+  const narrow = matchMedia('(max-width: 860px)');
+  let queued = 0;
+
   const show = (k: number | null) => {
     els.forEach((e, j) => e.classList.toggle('on', j === k));
-    if (k === null) { i.textContent = '00'; n.textContent = n.dataset.def!; on.textContent = on.dataset.def!; return; }
+    if (k === null) { i.textContent = ''; n.textContent = ''; return; }
     const d = devs[k];
     i.textContent = `${String(k + 1).padStart(2, '0')} · ${d.kind}`;
     n.textContent = d.name;
-    on.textContent = `屏幕上：${d.on}`;
   };
+
   els.forEach((e, k) => {
     e.addEventListener('pointerenter', () => show(k));
     e.addEventListener('focus', () => show(k));
-    e.addEventListener('click', () => show(k));
+    e.addEventListener('click', () => {
+      if (!narrow.matches || !scrollx || !marks[k]) { show(k); return; }
+      const m = marks[k];
+      const box = scrollx.getBoundingClientRect();
+      scrollx.scrollTo({
+        left: m.getBoundingClientRect().left - box.left + scrollx.scrollLeft - scrollx.clientWidth / 2,
+        behavior: 'smooth',
+      });
+    });
   });
-  root.addEventListener('pointerleave', () => show(null));
-  root.addEventListener('focusout', (ev) => { if (!root.contains((ev as FocusEvent).relatedTarget as Node)) show(null); });
+
+  root.addEventListener('pointerleave', () => { if (!narrow.matches) show(null); });
+  root.addEventListener('focusout', (ev) => {
+    if (!narrow.matches && !root.contains((ev as FocusEvent).relatedTarget as Node)) show(null);
+  });
+
+  // 按图形算每件的中心点,并补出两端可居中的余量
+  const place = () => {
+    if (!scrollx || !svg || !stage || marks.length !== els.length) return;
+    const k = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+    els.forEach((g, idx) => {
+      const b = g.querySelector('.lift')!.getBBox();
+      marks[idx].style.left = `${((b.x + b.width / 2) * k).toFixed(2)}px`;
+    });
+    if (!narrow.matches) { scrollx.style.paddingInline = ''; return; }
+    const half = scrollx.clientWidth / 2;
+    const first = parseFloat(marks[0].style.left);
+    const last = parseFloat(marks[marks.length - 1].style.left);
+    scrollx.style.paddingInline = `${Math.max(0, half - first)}px ${Math.max(0, half - (stage.clientWidth - last))}px`;
+  };
+
+  const sync = () => {
+    if (!scrollx || !narrow.matches || !marks.length) return;
+    const box = scrollx.getBoundingClientRect();
+    const mid = scrollx.scrollLeft + scrollx.clientWidth / 2;
+    let best = 0;
+    let near = Infinity;
+    marks.forEach((m, idx) => {
+      const d = Math.abs(m.getBoundingClientRect().left - box.left + scrollx.scrollLeft - mid);
+      if (d < near) { near = d; best = idx; }
+    });
+    show(best);
+  };
+
+  scrollx?.addEventListener('scroll', () => {
+    cancelAnimationFrame(queued);
+    queued = requestAnimationFrame(sync);
+  }, { passive: true });
+  addEventListener('resize', () => { place(); sync(); });
+  narrow.addEventListener('change', () => { place(); sync(); });
+  place();
+  if (scrollx && narrow.matches && marks.length) {
+    const box = scrollx.getBoundingClientRect();
+    scrollx.scrollLeft = marks[0].getBoundingClientRect().left - box.left + scrollx.scrollLeft - scrollx.clientWidth / 2;
+  }
+  sync();
 
   const tick = () => {
     const d = new Date();
@@ -35,7 +95,7 @@ export function initProjects() {
   const grid = document.getElementById('tiles');
   if (!grid) return;
   const tiles = [...grid.querySelectorAll<HTMLAnchorElement>('.tile')];
-  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-cat]')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.filter [data-cat]')];
   chips.forEach((c) =>
     c.addEventListener('click', () => {
       const cat = c.dataset.cat!;

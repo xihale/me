@@ -1,12 +1,12 @@
-export type Device = { kind: string; name: string; on: string };
+export type Device = { kind: string; name: string };
 export const devices: Device[] = [
-  { kind: '电脑', name: '机械革命 Yaoshi15Pro Series（GM5PQ0A）', on: '终端里在打字' },
-  { kind: '平板', name: 'Mi Pad 6 Pro', on: '一盘数独' },
-  { kind: '阅读器', name: 'Kindle KWP3', on: '《静夜思》' },
-  { kind: '手机', name: 'iPhone 7s', on: '锁屏，时间是真的' },
-  { kind: '手机', name: 'Redmi Turbo 4 Pro', on: '锁屏，同上' },
-  { kind: '手机', name: 'HONOR 9X Pro', on: '锁屏，同上' },
-  { kind: '穿戴', name: 'HUAWEI Band 9', on: '表盘，时间也是真的' },
+  { kind: '电脑', name: '机械革命 Yaoshi15Pro Series（GM5PQ0A）' },
+  { kind: '平板', name: 'Mi Pad 6 Pro' },
+  { kind: '阅读器', name: 'Kindle KWP3' },
+  { kind: '手机', name: 'iPhone 7s' },
+  { kind: '手机', name: 'Redmi Turbo 4 Pro' },
+  { kind: '手机', name: 'HONOR 9X Pro' },
+  { kind: '穿戴', name: 'HUAWEI Band 9' },
 ];
 
 export type Rated = { title: string; id: number; score: number };
@@ -60,23 +60,58 @@ Fate/Zero|10639|8
 `);
 
 export const books = r(`
-重启咲良田|14477|10
-人类衰退之后|11236|8
-你名字的侧面|354752|8
+雪国|366887|7
+白夜行|6686|8
+局外人|136481|7
+伊豆的舞女|296767|0
 来自新世界|37782|8
+杀戮轮回|19138|5
+追寻彗星的吸血鬼|501894|7
+少女☆歌剧 Revue Starlight 序曲|236900|6
+完美谎言的最后一句话|209722|6
+通往夏天的隧道，再见的出口|289878|5
+少女终末旅行|128202|7
+冰菓|27902|0
+宫泽贤治全集 第三卷|9706|0
+我想吃掉你的胰脏|141797|7
+你名字的侧面|354752|8
+再见绘梨|377599|7
+末日时在做什么？有没有空？可以来拯救吗？|140678|0
+人类衰退之后|11236|8
+昨日寻找星星的借口|309637|7
+宝贝，早安|166168|7
+夏天、烟火、我的尸体|1722|4
+重启咲良田|14477|10
+要知道有人爱着你呀|380289|7
+蓦然回首|342254|7
+阶梯岛系列|148819|7
+链锯人|268279|6
 `);
 
 export const games = r(`
+江山北望|587112|0
+OPUS：心相吾山|414509|0
+OPUS：龙脉常歌 -最终版-|623170|7
 魔法使之夜|540053|9
 星之终途后日谈：渺茫希望的日记|495135|8
+星之终途|317675|7
 `);
 
-export const music = r(`
+export const albums = r(`
 魔法使之夜 OST|36140|9
+いつだって。|11349|6
+六等星の夜/悲しみはオーロラに/TWINKLE TWINKLE LITTLE STAR|22843|6
+ninelie|174061|0
+勇者|457254|0
+UNDEAD|501797|0
+サマーゴースト オリジナルサウンドトラックCD|365650|0
+Avid / Hands Up to the Sky|331899|0
+86―エイティシックス― オリジナル・サウンドトラック|333024|0
+棘アリ|484421|7
+空白とカタルシス|499231|0
+熙熙攘攘、我们的城市|488829|0
+人类衰退之后 原声|49002|0
 `);
 
-export const film = r(`
-情书|12886|8
-`);
-
+export const bgmUser = 'https://bgm.tv/user/xihale';
 export const bgm = (id: number) => `https://bgm.tv/subject/${id}`;

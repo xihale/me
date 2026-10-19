@@ -2,10 +2,10 @@
 const VS = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
 const FS = `
 precision highp float;
-uniform vec2 uRes; uniform float uT; uniform vec2 uM;
+uniform vec2 uRes; uniform float uT; uniform vec2 uM; uniform vec2 uView;
 uniform vec3 uBg, uInk, uAcc;
 void main(){
-  vec2 p = (gl_FragCoord.xy - uRes * vec2(0.68, 0.5)) / min(uRes.x * 0.8, uRes.y);
+  vec2 p = (gl_FragCoord.xy - uRes * uView) / min(uRes.x * 0.8, uRes.y);
   p *= 2.5;
   float a = uT * 0.045 + 2.2 + uM.x * 0.35;
   float r = 0.7885 + uM.y * 0.03;
@@ -58,10 +58,16 @@ export function initJulia(canvas: HTMLCanvasElement) {
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   const U = (n: string) => gl.getUniformLocation(prog, n);
-  const uRes = U('uRes'), uT = U('uT'), uM = U('uM'), uBg = U('uBg'), uInk = U('uInk'), uAcc = U('uAcc');
+  const uRes = U('uRes'), uT = U('uT'), uM = U('uM'), uBg = U('uBg'), uInk = U('uInk'), uAcc = U('uAcc'), uView = U('uView');
+
+  // 窄屏画布转了 90°,视角中心回到画面中央,分形才不会挤在一边
+  const narrow = matchMedia('(max-width: 860px)');
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let visible = true, raf = 0, t0 = performance.now();
+  // 触屏没有悬停:长按加速,别的指针事件都不要;有些环境没有指针设备,所以再看触点
+  const touch = matchMedia('(hover: none)').matches && navigator.maxTouchPoints > 0;
+  const BOOST = 12;
+  let visible = true, raf = 0, last = performance.now(), clock = 0, speed = 1, want = 1;
   const target = [0, 0], cur = [0, 0];
 
   const colors = () => {
@@ -76,11 +82,16 @@ export function initJulia(canvas: HTMLCanvasElement) {
     canvas.height = Math.max(1, Math.round(canvas.clientHeight * k));
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform2f(uView, narrow.matches ? 0.5 : 0.68, 0.5);
   };
   const draw = (now: number) => {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    speed += (want - speed) * 0.08;
+    clock += dt * speed;
     cur[0] += (target[0] - cur[0]) * 0.04;
     cur[1] += (target[1] - cur[1]) * 0.04;
-    gl.uniform1f(uT, reduce ? 0 : (now - t0) / 1000);
+    gl.uniform1f(uT, reduce ? 0 : clock);
     gl.uniform2f(uM, cur[0], cur[1]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
@@ -90,18 +101,30 @@ export function initJulia(canvas: HTMLCanvasElement) {
   };
   const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
 
-  colors(); resize(); draw(t0);
+  colors(); resize(); draw(last);
   canvas.classList.add('on');
   if (reduce) {
-    addEventListener('resize', () => { resize(); draw(t0); });
-    new MutationObserver(() => { colors(); draw(t0); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    addEventListener('resize', () => { resize(); draw(performance.now()); });
+    new MutationObserver(() => { colors(); draw(performance.now()); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return;
   }
   addEventListener('resize', resize);
-  addEventListener('pointermove', (e) => {
-    target[0] = (e.clientX / innerWidth) * 2 - 1;
-    target[1] = (e.clientY / innerHeight) * 2 - 1;
-  }, { passive: true });
+  if (touch) {
+    let press = 0;
+    const release = () => { clearTimeout(press); want = 1; };
+    canvas.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary) return;
+      clearTimeout(press);
+      press = window.setTimeout(() => { want = BOOST; }, 280);
+    });
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+  } else {
+    addEventListener('pointermove', (e) => {
+      target[0] = (e.clientX / innerWidth) * 2 - 1;
+      target[1] = (e.clientY / innerHeight) * 2 - 1;
+    }, { passive: true });
+  }
   new MutationObserver(colors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) kick(); }).observe(canvas);
   kick();

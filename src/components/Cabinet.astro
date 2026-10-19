@@ -6,8 +6,23 @@ const cx = [202, 512, 713, 830, 928, 1031, 1115];
 const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89], [1090, 50]];
 ---
 <div class="cabinet" id="cabinet">
+  <div class="cap">
+    <div class="sizer" aria-hidden="true">
+      {devices.map((d, k) => (
+        <div>
+          <p class="mono dim">{String(k + 1).padStart(2, '0')} · {d.kind}</p>
+          <h3>{d.name}</h3>
+        </div>
+      ))}
+    </div>
+    <div class="live" aria-live="polite">
+      <p class="mono dim" id="cap-i"></p>
+      <h3 id="cap-n"></h3>
+    </div>
+  </div>
   <div class="scrollx">
-    <svg viewBox="0 0 1168 372" role="group" aria-label="设备陈列，同一比例">
+    <div class="stage">
+    <svg viewBox="0 0 1168 372" role="group" aria-label="设备陈列">
       <line class="floor" x1="0" y1="300.5" x2="1168" y2="300.5" />
       <line class="floor-b" x1="0" y1="306.5" x2="1168" y2="306.5" />
 
@@ -127,20 +142,9 @@ const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89],
         <text class="tk" x={cx[6]} y="336">07</text>
       </g>
 
-      <g class="scale">
-        <line x1="1038" y1="358" x2="1128" y2="358" />
-        <line x1="1038" y1="354" x2="1038" y2="362" /><line x1="1128" y1="354" x2="1128" y2="362" />
-        <text x="1083" y="371" text-anchor="middle">约 100 mm</text>
-      </g>
     </svg>
-  </div>
-  <p class="mono dim hint">← 左右滑动 →</p>
-  <div class="cap" aria-live="polite">
-    <div>
-      <p class="mono dim" id="cap-i">00</p>
-      <h3 id="cap-n" data-def="七件，同一比例。">七件，同一比例。</h3>
+      {cx.map((c, k) => <i class="snap" style={`left:${((c / 1168) * 100).toFixed(3)}%`} data-i={k} />)}
     </div>
-    <p class="mono on" id="cap-on" data-def="悬停或点按其中一件。">悬停或点按其中一件。</p>
   </div>
   <script type="application/json" id="dev-data" set:html={JSON.stringify(devices)} />
 </div>

@@ -1,9 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
 import Cabinet from '../components/Cabinet.astro';
 import { groups } from '../data/projects';
-import { devices, anime, books, games, music, film, bgm } from '../data/status';
+import { anime, bgm, bgmUser } from '../data/status';
+import { songs, songUrl, likedUrl } from '../data/music';
 import { asset, slug } from '../data/asset';
+import { movies, douban, movieCover } from '../data/movies';
+import { shelves, byScore } from '../data/books';
 import fs from 'node:fs';
 
 const thumb = (url: string) => {
@@ -28,31 +32,35 @@ const tiles = groups.flatMap((g) => g.items.map((it) => ({ ...it, cat: g.title, 
 const total = tiles.length;
 const top = anime.filter((a) => a.score >= 9);
 const rest = anime.filter((a) => a.score < 9);
-const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['音乐', music], ['真人影视', film]];
+const SHELF_MAX = 11;
+const movieShelf = movies.map((m) => ({
+  title: m.name,
+  score: m.stars * 2, // 仅供排序
+  url: douban(m.id),
+  img: asset(movieCover(m.id)),
+}));
+const shelfGroups = [
+  { label: '电影', href: asset('movies'), items: movieShelf, showScore: false },
+  ...shelves.map(([label, anchor, items]) => ({ label, href: `${asset('bangumi')}#${anchor}`, items, showScore: true })),
+];
 ---
 <Base title="xihale" description="xihale 的个人主页：项目、设备和清单。">
-  <header class="bar">
-    <a class="brand" href="#top"><i></i>xihale</a>
-    <nav>
-      <a href="#about">关于</a>
-      <a href="#cabinet">展柜</a>
-      <a href="#projects">项目</a>
-      <a href="#list">清单</a>
-      <button class="theme" id="theme" aria-label="切换明暗主题" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
-      </button>
-    </nav>
-  </header>
+  <Header
+    brandHref="#top"
+    nav={[
+      { label: '关于', href: '#about' },
+      { label: '展柜', href: '#collection' },
+      { label: '项目', href: '#projects' },
+      { label: '清单', href: '#list' },
+      { label: '音乐', href: '#music' },
+    ]}
+  />
 
   <main id="top">
     <section class="hero">
       <canvas id="julia" aria-hidden="true"></canvas>
       <div class="wrap">
         <h1><span><b>xihale</b></span></h1>
-        <div class="hero-meta mono">
-          <span>写代码 · 折腾设备 · 看番</span>
-          <span class="scroll">往下</span>
-        </div>
       </div>
     </section>
 
@@ -60,28 +68,24 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
       <section class="sec" id="about">
         <div class="rail rv"><span class="no mono">01</span><h2>关于</h2></div>
         <div class="body">
-          <p class="lede rv">做的东西都不大。<br />多半只解决一个问题，<br />偶尔只是想知道做不做得出来。</p>
-          <dl class="nums rv">
-            <div><dt>{total}</dt><dd class="mono">个项目</dd></div>
-            <div><dt>{devices.length}</dt><dd class="mono">件设备</dd></div>
-            <div><dt>{anime.length}</dt><dd class="mono">部番，8 分以上</dd></div>
-          </dl>
+          <p class="lede rv">想法很多，简简单单。</p>
           <p class="links mono rv">
             <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
-            <a href="https://xihale.top" target="_blank" rel="noopener">种墨 ↗</a>
+            <a href="https://xihale.top" target="_blank" rel="noopener">Blog ↗</a>
+            <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
+            <a href="https://x.com/xihale" target="_blank" rel="noopener">X ↗</a>
           </p>
         </div>
       </section>
 
       <section class="sec" id="collection">
-        <div class="rail rv"><span class="no mono">02</span><h2>展柜</h2><p class="note">现役设备。</p></div>
+        <div class="rail rv"><span class="no mono">02</span><h2>展柜</h2></div>
         <div class="body rv"><Cabinet /></div>
       </section>
 
       <section class="sec" id="projects">
         <div class="rail rv">
           <span class="no mono">03</span><h2>项目</h2>
-          <p class="note">{total} 个，按类别排。<br />其中两个已存档。</p>
           <ul class="filter">
             <li><button class="on mono" data-cat="*" type="button"><span>全部</span><i>{total}</i></button></li>
             {groups.map((g) => <li><button class="mono" data-cat={g.title} type="button"><span>{g.title}</span><i>{g.items.length}</i></button></li>)}
@@ -90,7 +94,7 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
         <div class="body rv">
           <div class="tiles" id="tiles">
             {tiles.map((t) => (
-              <a class:list={['tile', { arch: t.archived }]} href={t.url} target="_blank" rel="noopener"
+              <a class="tile" href={t.url} target="_blank" rel="noopener"
                 data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
                 <span class="n mono">{t.no}</span>
                 <span class="c mono">{t.short}</span>
@@ -103,15 +107,15 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
       </section>
 
       <section class="sec" id="list">
-        <div class="rail rv"><span class="no mono">04</span><h2>清单</h2><p class="note">只记 8 分以上的。</p></div>
+        <div class="rail rv"><span class="no mono">04</span><h2>清单</h2></div>
         <div class="body">
           <div class="block rv">
-            <h3 class="sub">番<span class="mono">{anime.length}</span></h3>
+            <h3 class="sub">番</h3>
             <div class="wall-top">
               {top.map((a) => (
                 <a class="fig" href={bgm(a.id)} target="_blank" rel="noopener">
                   <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
-                  <span class="cap"><i>{a.score}</i><b>{a.title}</b></span>
+                  <span class="cap"><b>{a.title}</b></span>
                 </a>
               ))}
             </div>
@@ -122,28 +126,53 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
                   <span class="tip">{a.title}</span>
                 </a>
               ))}
+              <a class="poster more" href={bgmUser} target="_blank" rel="noopener">
+                <span>更多</span>
+              </a>
             </div>
           </div>
 
           <div class="block rv shelf">
-            {shelves.map(([label, list]) => (
-              <div>
-                <h3 class="sub">{label}</h3>
-                <div class="wall small">
-                  {[...list].sort((x, y) => y.score - x.score).map((x) => (
-                    <a class="poster" href={bgm(x.id)} target="_blank" rel="noopener" title={`${x.title} · ${x.score} 分`}>
-                      <img src={cover(x.id)} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
-                      <span class="score">{x.score}</span>
-                      <span class="tip">{x.title}</span>
-                    </a>
-                  ))}
+            {shelfGroups.map(({ label, href, items, showScore }) => {
+              const sorted = byScore(items);
+              const shown = sorted.slice(0, SHELF_MAX);
+              return (
+                <div>
+                  <h3 class="sub">{label}</h3>
+                  <div class="wall small">
+                    {shown.map((x) => (
+                      <a class="poster" href={x.url} target="_blank" rel="noopener" title={showScore && x.score ? `${x.title} · ${x.score} 分` : x.title}>
+                        <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
+                        {showScore && x.score > 0 && <span class="score">{x.score}</span>}
+                        <span class="tip">{x.title}</span>
+                      </a>
+                    ))}
+                    {sorted.length > SHELF_MAX && (
+                      <a class="poster more" href={href}>
+                        <span>更多</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="music">
+        <div class="rail rv"><span class="no mono">05</span><h2>音乐</h2></div>
+        <div class="body rv">
+          <div class="tracks">
+            {songs.map((x) => (
+              <a class="track" href={songUrl(x.id)} target="_blank" rel="noopener">
+                <img src={asset(`img/music/${x.id}.webp`)} alt="" loading="lazy" decoding="async" width="400" height="400" />
+                <span class="t"><b>{x.title}</b><i>{x.artist}</i></span>
+              </a>
             ))}
-            <div>
-              <h3 class="sub">歌</h3>
-              <p class="empty">还在挑。</p>
-            </div>
+            <a class="track more" href={likedUrl} target="_blank" rel="noopener">
+              <span class="t"><b>我喜欢的音乐</b><i>网易云歌单 ↗</i></span>
+            </a>
           </div>
         </div>
       </section>
@@ -155,7 +184,10 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
       <p class="mono">xihale · 2026</p>
       <p class="mono links">
         <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
-        <a href="https://xihale.top" target="_blank" rel="noopener">种墨 ↗</a>
+        <a href="https://xihale.top" target="_blank" rel="noopener">Blog ↗</a>
+        <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
+        <a href="https://x.com/xihale" target="_blank" rel="noopener">X ↗</a>
+        <a href={asset('movies')}>电影 ↗</a>
       </p>
     </div>
   </footer>
@@ -170,20 +202,11 @@ const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['
   <script>
     import { initJulia } from '../scripts/julia';
     import { initCabinet, initProjects } from '../scripts/ui';
+    import { initChrome } from '../scripts/chrome';
 
     initJulia(document.getElementById('julia') as HTMLCanvasElement);
     initCabinet();
     initProjects();
-
-    document.getElementById('theme')!.addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      localStorage.setItem('theme', next);
-    });
-
-    const io = new IntersectionObserver((es) => {
-      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -6% 0px' });
-    document.querySelectorAll('.rv').forEach((el) => io.observe(el));
+    initChrome();
   </script>
 </Base>

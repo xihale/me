@@ -1,0 +1,52 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { shelves, byScore } from '../../data/books';
+import { asset } from '../../data/asset';
+---
+<Base title="清单 · xihale" description="书、游戏与专辑收藏，完整列表（Bangumi 优先，豆瓣补充）。">
+  <Header brandHref={asset('')} nav={[{ label: '首页', href: asset('') }, ...shelves.map(([label, anchor]) => ({ label, href: `#${anchor}` }))]} />
+
+  <main id="top">
+    <div class="wrap">
+      {shelves.map(([label, anchor, list]) => (
+        <section class="sec paged" id={anchor}>
+          <div class="rail rv">
+            <span class="no mono">收藏</span>
+            <h2>{label}</h2>
+            <p class="meta mono">{list.length} 部</p>
+          </div>
+          <div class="body rv">
+            <div class="rack">
+              {byScore(list).map((x) => (
+                <a class="fig" href={x.url} target="_blank" rel="noopener">
+                  <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
+                  <span class="cap">
+                    <i>{x.score || '—'}</i>
+                    <b>{x.title}</b>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <p class="mono">xihale · 2026</p>
+      <p class="mono links">
+        <a href={asset('movies')}>电影 ↗</a>
+        <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
+        <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    import { initChrome } from '../../scripts/chrome';
+    initChrome();
+  </script>
+</Base>
