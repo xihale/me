@@ -1,0 +1,166 @@
+---
+import Base from '../layouts/Base.astro';
+import { groups } from '../data/projects';
+import { devices, anime, books, games, music, film, bgm } from '../data/status';
+
+const total = groups.reduce((n, g) => n + g.items.length, 0);
+const pad = (n: number) => String(n).padStart(2, '0');
+const rated = (xs: typeof anime, s: number) => xs.filter((x) => x.score === s);
+const top = anime.filter((a) => a.score >= 9);
+const rest = anime.filter((a) => a.score < 9);
+
+const clues: [string, string][] = [
+  ['常用', 'Typst、Go、Zig，偶尔也写写 Android'],
+  ['常做', '把书、诗与习题做成可以读的东西'],
+  ['常驻', 'Arch Linux 与 AUR，OpenWrt 路由器'],
+  ['常看', '动画、书与游戏，8 分以上才记下来'],
+];
+---
+<Base title="xihale · 个人主页" description="爱东搞西搞，实力不强，心比天高。xihale 的项目与日常。">
+  <header class="bar">
+    <a class="brand" href="#top"><i></i>xihale</a>
+    <nav>
+      <a href="#about">自我介绍</a>
+      <a href="#projects">项目</a>
+      <a href="#status">状态</a>
+      <button class="theme" id="theme" aria-label="切换明暗主题" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <canvas id="julia" aria-hidden="true"></canvas>
+      <div class="wrap">
+        <h1>
+          <span><b>爱东搞西搞，</b></span>
+          <span><b>实力不强，</b></span>
+          <span><b>心比天高。</b></span>
+        </h1>
+        <div class="hero-meta mono">
+          <span>xihale — 个人主页</span>
+          <span>{total} 个项目 · 持续搞中</span>
+          <span class="scroll">向下</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="s" id="about">
+        <div class="s-head rv"><span class="no mono">01</span><h2>自我介绍</h2></div>
+        <div class="grid2">
+          <p class="lede rv">爱东搞西搞，<br />实力不强，<br />心比天高。<br /><em>所以一直在做。</em></p>
+          <div class="rv">
+            <p class="mono" style="color: var(--muted); margin-bottom: 1.4rem">关于我的线索 / clues</p>
+            <dl class="clues">
+              {clues.map(([k, v], i) => (
+                <div><dt class="mono">{pad(i + 1)} {k}</dt><dd>{v}</dd></div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="s" id="projects">
+        <div class="s-head rv"><span class="no mono">02</span><h2>项目列表</h2><span class="aside mono">{total} 项 · {groups.length} 类</span></div>
+        {groups.map((g) => (
+          <div class="group rv">
+            <header><h3>{g.title}</h3><span class="mono">{pad(g.items.length)}</span></header>
+            <ul>
+              {g.items.map((it, i) => (
+                <li>
+                  <a class:list={['row', { arch: it.archived }]} href={it.url} target="_blank" rel="noopener">
+                    <span class="idx mono">{pad(i + 1)}</span>
+                    <span class="t">
+                      <span class="name">{it.name}{it.archived && <span class="tag">存档</span>}</span>
+                      <span class="desc">{it.desc}</span>
+                    </span>
+                    <span class="go" aria-hidden="true">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <section class="s" id="status">
+        <div class="s-head rv"><span class="no mono">03</span><h2>状态</h2></div>
+
+        <div class="grid2 block rv">
+          <div>
+            <h3 class="sub">设备</h3>
+            <dl class="devices">
+              {devices.map(([k, v]) => <div><dt class="mono">{k}</dt><dd>{v}</dd></div>)}
+            </dl>
+          </div>
+          <div>
+            <h3 class="sub">喜欢的歌</h3>
+            <p class="empty">待补充</p>
+          </div>
+        </div>
+
+        <div class="block rv">
+          <h3 class="sub">番<span class="mono">动画 · 8 分以上 · {anime.length}</span></h3>
+          <div class="top">
+            {top.map((a) => (
+              <a class="card" href={bgm(a.id)} target="_blank" rel="noopener">
+                <span class="n">{a.score}<small>/ 10</small></span>
+                <span class="ti">{a.title}</span>
+              </a>
+            ))}
+          </div>
+          <details class="more">
+            <summary class="mono">另外 {rest.length} 部，8 分</summary>
+            <div class="chips">
+              {rest.map((a) => <a class="chip" href={bgm(a.id)} target="_blank" rel="noopener">{a.title}</a>)}
+            </div>
+          </details>
+        </div>
+
+        <div class="block rv shelf">
+          {[
+            ['书', books], ['游戏', games], ['音乐', music], ['真人影视', film],
+          ].map(([label, list]: any) => (
+            <div>
+              <h3 class="sub">{label}<span class="mono">8 分以上</span></h3>
+              {[10, 9, 8].map((s) => rated(list, s).length > 0 && (
+                <>
+                  <p class="score-label mono">{s} 分</p>
+                  <div class="chips" style="margin-bottom: 1.2rem">
+                    {rated(list, s).map((x) => <a class="chip" href={bgm(x.id)} target="_blank" rel="noopener">{x.title}</a>)}
+                  </div>
+                </>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p class="big">在 <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub</a> 找到我。</p>
+      <p class="meta mono">© 2026 xihale<br />Astro · 手写 WebGL Julia 集</p>
+    </div>
+  </footer>
+
+  <script>
+    import { initJulia } from '../scripts/julia';
+
+    initJulia(document.getElementById('julia') as HTMLCanvasElement);
+
+    document.getElementById('theme')!.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('theme', next);
+    });
+
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.rv').forEach((el) => io.observe(el));
+  </script>
+</Base>
