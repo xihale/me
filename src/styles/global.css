@@ -321,6 +321,11 @@ html.js .rv.in { opacity: 1; transform: none; }
 .track.more .t b { font-size: 0.8125rem; }
 .track.more:hover, .track.more:focus-visible { border-color: var(--accent); }
 
+/* 触屏没有 hover,海报/封面直接显示原色 */
+@media (hover: none) {
+  .poster img, .track img { filter: none; opacity: 1; }
+}
+
 
 /* ---------- footer ---------- */
 footer { border-top: 1px solid var(--ink); }
