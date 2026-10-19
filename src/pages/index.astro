@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cabinet from '../components/Cabinet.astro';
-import { groups } from '../data/projects';
+import { groups, entries } from '../data/projects';
 import { anime, bgm, bgmUser } from '../data/status';
 import { songs, songUrl, likedUrl } from '../data/music';
 import { asset, slug } from '../data/asset';
@@ -16,20 +16,7 @@ const thumb = (url: string) => {
   return fs.existsSync(`public/${f}`) ? asset(f) : '';
 };
 const cover = (id: number) => asset(`img/covers/${id}.webp`);
-const pad = (n: number) => String(n).padStart(2, '0');
-const used = new Set<string>();
-const sym = (n: string) => {
-  if (!/^[A-Za-z]/.test(n)) return [...n][0];
-  const letters = n.replace(/[^A-Za-z]/g, '');
-  const first = letters[0].toUpperCase();
-  for (const c of letters.slice(1)) {
-    const s = first + c.toLowerCase();
-    if (!used.has(s)) { used.add(s); return s; }
-  }
-  return first;
-};
-let k = 0;
-const tiles = groups.flatMap((g) => g.items.map((it) => ({ ...it, cat: g.title, short: g.short, no: pad(++k), sym: sym(it.name), img: thumb(it.url), host: new URL(it.url).host })));
+const tiles = entries.map((e) => ({ ...e, img: thumb(e.url) }));
 const total = tiles.length;
 const top = anime.filter((a) => a.score >= 9);
 const rest = anime.filter((a) => a.score < 9);
@@ -91,6 +78,7 @@ const shelfGroups = [
             <li><button class="on mono" data-cat="*" type="button"><span>全部</span><i>{total}</i></button></li>
             {groups.map((g) => <li><button class="mono" data-cat={g.title} type="button"><span>{g.title}</span><i>{g.items.length}</i></button></li>)}
           </ul>
+          <a class="all mono" href={asset('projects')}>详情 →</a>
         </div>
         <div class="body rv">
           <div class="tiles" id="tiles">

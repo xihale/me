@@ -1,5 +1,6 @@
 export type Project = { name: string; url: string; desc: string };
 export type Group = { title: string; short: string; items: Project[] };
+export type Entry = Project & { cat: string; short: string; no: string; sym: string; host: string };
 
 const p = (name: string, url: string, desc: string): Project => ({ name, url, desc });
 
@@ -53,3 +54,26 @@ export const groups: Group[] = [
     p('aword', 'https://aword.code.xihale.top', '早期「一言」实验页'),
   ]},
 ];
+
+// 首字母做符号,重名时顺延取名字里的下一个字母,如 Blog / Books → Bl
+const symbols = () => {
+  const used = new Set<string>();
+  return (name: string) => {
+    if (!/^[A-Za-z]/.test(name)) return [...name][0];
+    const letters = name.replace(/[^A-Za-z]/g, '');
+    const first = letters[0].toUpperCase();
+    for (const c of letters.slice(1)) {
+      const s = first + c.toLowerCase();
+      if (!used.has(s)) { used.add(s); return s; }
+    }
+    return first;
+  };
+};
+
+export const entries: Entry[] = (() => {
+  const sym = symbols();
+  let k = 0;
+  return groups.flatMap((g) =>
+    g.items.map((it) => ({ ...it, cat: g.title, short: g.short, no: String(++k).padStart(2, '0'), sym: sym(it.name), host: new URL(it.url).host }))
+  );
+})();

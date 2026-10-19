@@ -113,6 +113,7 @@ html.js .rv.in { opacity: 1; transform: none; }
   .cabinet .cur { animation: none !important; }
   .bar, .theme { transition: none; }
   .poster img, .track img, .fig img { transition: none; transform: none !important; }
+  .proj .pm img { transition: none; transform: none !important; }
   .poster .tip, .fig .tip { transition: none; transform: none !important; }
 }
 @media (max-width: 640px) {
@@ -224,21 +225,24 @@ html.js .rv.in { opacity: 1; transform: none; }
 
 /* ---------- projects ---------- */
 .filter { margin-top: 1.6rem; display: flex; flex-direction: column; gap: 0.1rem; }
-.filter button {
+.filter :is(button, a) {
   width: 100%; display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline;
   background: none; border: 0; padding: 0.28rem 0; color: var(--muted); cursor: pointer; text-align: left;
   font-size: 0.875rem; letter-spacing: 0.01em; transition: color 0.2s, padding 0.25s;
 }
-.filter button i { font-style: normal; color: var(--faint); }
-.filter button:hover { color: var(--ink); }
+.filter :is(button, a) i { font-style: normal; color: var(--faint); }
+.filter :is(button, a):hover { color: var(--ink); }
 .filter button.on { color: var(--accent); padding-left: 0.9rem; position: relative; }
 .filter button.on::before { content: ''; position: absolute; left: 0; top: 50%; width: 0.55rem; height: 1px; background: var(--accent); }
+.rail .all { display: inline-block; margin-top: 1.3rem; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
+.rail .all:hover { color: var(--accent); border-color: var(--accent); }
 @media (max-width: 860px) {
   .filter { flex-direction: row; flex-wrap: wrap; gap: 0.4rem; }
-  .filter button { width: auto; border: 1px solid var(--line); border-radius: 99px; padding: 0.25rem 0.8rem; }
+  .filter :is(button, a) { width: auto; border: 1px solid var(--line); border-radius: 99px; padding: 0.25rem 0.8rem; }
   .filter button.on { padding-left: 0.8rem; border-color: var(--accent); }
   .filter button.on::before { display: none; }
-  .filter button i { display: none; }
+  .filter :is(button, a) i { display: none; }
+  .rail .all { margin-top: 0.9rem; }
 }
 
 .tiles { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
@@ -265,6 +269,25 @@ html.js .rv.in { opacity: 1; transform: none; }
   .tiles { gap: 0; border-top: 1px solid var(--line); }
   .tile { border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .tile .nm { font-size: 0.875rem; color: var(--ink); }
+}
+
+/* ---------- project details page ---------- */
+.plist { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: clamp(1rem, 2.4vw, 1.6rem); }
+.proj { display: flex; flex-direction: column; border: 1px solid var(--line); transition: border-color 0.25s; }
+.proj:hover, .proj:focus-visible { border-color: var(--ink); }
+.proj .pm { aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); display: grid; place-items: center; border-bottom: 1px solid var(--line); }
+.proj .pm img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; filter: grayscale(1) contrast(1.02); opacity: 0.9; transition: filter 0.4s, opacity 0.4s, transform 0.5s; }
+.proj:hover .pm img, .proj:focus-visible .pm img { filter: none; opacity: 1; transform: scale(1.03); }
+.proj .psym { font-family: var(--serif); font-weight: 300; font-size: 4.5rem; line-height: 1; color: var(--accent); }
+.proj .pt { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.8rem 0.9rem 1rem; }
+.proj .phead { display: flex; justify-content: space-between; gap: 0.6rem; color: var(--faint); }
+.proj .phead i { font-style: normal; }
+.proj .phead em { font-style: normal; text-align: right; overflow-wrap: anywhere; }
+.proj .pname { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; line-height: 1.35; overflow-wrap: anywhere; transition: color 0.2s; }
+.proj .pdesc { font-size: 0.875rem; line-height: 1.65; color: var(--muted); }
+.proj:hover .pname, .proj:focus-visible .pname { color: var(--accent); }
+@media (max-width: 420px) {
+  .plist { grid-template-columns: 1fr; }
 }
 
 #peek {
@@ -395,6 +418,7 @@ dialog.sheet[open]::backdrop { opacity: 1; }
 /* 触屏没有 hover,海报/封面直接显示原色 */
 @media (hover: none) {
   .poster img, .track img, .fig img { filter: none; opacity: 1; }
+  .proj .pm img { filter: none; opacity: 1; }
   .rack .poster .tip, .rack .fig .tip { opacity: 1; transform: none; }
 }
 

@@ -1,0 +1,64 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { asset, slug } from '../../data/asset';
+import { groups, entries } from '../../data/projects';
+import fs from 'node:fs';
+
+const shot = (url: string) => {
+  const f = `img/shots/${slug(url)}.webp`;
+  return fs.existsSync(`public/${f}`) ? asset(f) : '';
+};
+const nav = [{ label: '首页', href: asset('') }];
+---
+<Base title="项目 · xihale" description={`xihale 的 ${entries.length} 个项目：封面、介绍与链接。`}>
+  <Header brandHref={asset('')} nav={nav} />
+
+  <main id="top">
+    <div class="wrap">
+      <section class="sec paged" id="all">
+        <div class="rail rv">
+          <span class="no mono">03</span>
+          <h2>项目</h2>
+          <p class="meta mono">共 {entries.length} 个<br />点击卡片访问</p>
+          <ul class="filter">
+            {groups.map((g) => (
+              <li><a class="mono" href={`#g-${g.title}`}><span>{g.title}</span><i>{g.items.length}</i></a></li>
+            ))}
+          </ul>
+        </div>
+        <div class="body">
+          {groups.map((g) => (
+            <div class="group rv" id={`g-${g.title}`}>
+              <h3 class="sub">{g.title} <span class="mono dim">{g.items.length}</span></h3>
+              <div class="plist">
+                {entries.filter((e) => e.cat === g.title).map((e) => (
+                  <a class="proj" href={e.url} target="_blank" rel="noopener" title={e.name}>
+                    <span class="pm">
+                      {shot(e.url)
+                        ? <img src={shot(e.url)} alt={e.name} loading="lazy" decoding="async" width="720" height="450" />
+                        : <b class="psym">{e.sym}</b>}
+                    </span>
+                    <span class="pt">
+                      <span class="phead mono"><i>{e.no}</i><em>{e.host}</em></span>
+                      <b class="pname">{e.name}</b>
+                      <span class="pdesc">{e.desc}</span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <Footer current="" />
+
+  <script>
+    import { initChrome } from '../../scripts/chrome';
+    initChrome();
+  </script>
+</Base>
