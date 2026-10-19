@@ -4,9 +4,9 @@ xihale 的个人主页 —— Astro 静态站点。现代极简，中性色打�
 
 ## 内容与素材
 
-- **展柜**：three.js 渲染的 glTF 玻璃龙（Stanford Dragon，Khronos glTF Sample Assets，已去掉背景布并压缩到 2.7 MB，滚动到可视区才加载），背后的等高线按明暗主题实时重绘。
-- **古画**：Art Institute of Chicago 开放获取的公有领域藏品。
-- **项目缩略图**：`public/img/shots/<域名 slug>.webp`，没有图的项目自动显示首字母方块。
+- **展柜**：纯 SVG 线稿，7 件现役设备按同一比例摆在一条台面上（`src/components/Cabinet.astro`）。手机显示实时时间，笔记本在打字，平板上是数独，Kindle 上是《静夜思》；悬停或点按查看型号。
+- **项目**：元素周期表式的方格索引，可按类别筛选，悬停浮出截图与简介。
+- **项目缩略图**：`public/img/shots/<域名 slug>.webp`，没有图的项目在浮层里显示符号方块。
 - **番剧/书/游戏封面**：Bangumi，`public/img/covers/<subject id>.webp`。
 
 ## 开发
@@ -22,9 +22,9 @@ npm run build    # 输出到 dist/
 - `src/data/projects.ts`：项目列表（分组、链接、简介、是否存档）
 - `src/data/status.ts`：设备与 Bangumi 评分清单
 - `src/pages/index.astro`：页面结构与文案
-- `src/data/art.ts`：古画藏品
+- `src/components/Cabinet.astro`：设备展柜
 - `src/scripts/julia.ts`：首屏背景着色器
-- `src/scripts/model.ts`：3D 模型查看器
+- `src/scripts/ui.ts`：展柜与项目索引的交互
 
 ## 部署
 

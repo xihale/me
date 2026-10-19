@@ -1,0 +1,146 @@
+---
+import { devices } from '../data/status';
+const T = ['$ zig build', '$ typst compile', '$ git push', 'Everything up-to-date'];
+const poem = ['床前明月光', '疑是地上霜', '举头望明月', '低头思故乡'];
+const cx = [202, 512, 713, 830, 928, 1031, 1115];
+const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89], [1090, 50]];
+---
+<div class="cabinet" id="cabinet">
+  <div class="scrollx">
+    <svg viewBox="0 0 1168 372" role="group" aria-label="设备陈列，同一比例">
+      <line class="floor" x1="0" y1="300.5" x2="1168" y2="300.5" />
+      <line class="floor-b" x1="0" y1="306.5" x2="1168" y2="306.5" />
+
+      <!-- 01 laptop -->
+      <g class="dev" tabindex="0" role="button" data-i="0" aria-label={`${devices[0].kind} ${devices[0].name}`}>
+        <rect class="hit" x={hit[0][0]} y="60" width={hit[0][1]} height="300" />
+        <g class="lift">
+          <rect class="body" x="44" y="90" width="316" height="200" rx="8" />
+          <rect class="scr" x="52" y="98" width="300" height="184" rx="2" />
+          <defs>
+            {T.map((_, i) => (
+              <clipPath id={`ty${i}`}><rect class="ty" style={`--d:${i * 1.6}s`} x="60" y={106 + i * 20} height="18" /></clipPath>
+            ))}
+          </defs>
+          {T.map((t, i) => (
+            <text class="mono-t" x="62" y={120 + i * 20} clip-path={`url(#ty${i})`}>
+              <tspan class={t.startsWith('$') ? 'p' : 'o'}>{t}</tspan>
+            </text>
+          ))}
+          <rect class="cur" x="62" y="196" width="7" height="12" />
+          <rect class="foot-l" x="36" y="290" width="332" height="10" rx="5" />
+          <rect class="notch" x="176" y="290" width="52" height="4" rx="2" />
+        </g>
+        <text class="tk" x={cx[0]} y="336">01</text>
+      </g>
+
+      <!-- 02 tablet -->
+      <g class="dev" tabindex="0" role="button" data-i="1" aria-label={`${devices[1].kind} ${devices[1].name}`}>
+        <rect class="hit" x={hit[1][0]} y="100" width={hit[1][1]} height="260" />
+        <g class="lift">
+          <rect class="body" x="398" y="140" width="229" height="150" rx="10" />
+          <rect class="scr paper" x="407" y="149" width="211" height="132" rx="3" />
+          <g class="sudoku" transform="translate(452 155)">
+            <rect width="120" height="120" fill="none" class="gl-t" />
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <>
+                <line class={n % 3 ? 'gl' : 'gl-t'} x1={n * 13.33} y1="0" x2={n * 13.33} y2="120" />
+                <line class={n % 3 ? 'gl' : 'gl-t'} x1="0" y1={n * 13.33} x2="120" y2={n * 13.33} />
+              </>
+            ))}
+            {[[0,0,5],[1,0,3],[4,0,7],[0,1,6],[3,1,1],[4,1,9],[5,1,5],[1,2,9],[2,2,8],[7,2,6],[0,3,8],[4,3,6],[8,3,3],[0,4,4],[3,4,8],[5,4,3],[8,4,1],[0,5,7],[4,5,2],[8,5,6],[1,6,6],[6,6,2],[7,6,8],[3,7,4],[4,7,1],[5,7,9],[8,7,5],[4,8,8],[7,8,7],[8,8,9]].map(([c, r, v]) => (
+              <text class="dg" x={c * 13.33 + 6.7} y={r * 13.33 + 10.5}>{v}</text>
+            ))}
+          </g>
+          <rect class="foot" x="500" y="290" width="26" height="10" rx="2" />
+        </g>
+        <text class="tk" x={cx[1]} y="336">02</text>
+      </g>
+
+      <!-- 03 kindle -->
+      <g class="dev" tabindex="0" role="button" data-i="2" aria-label={`${devices[2].kind} ${devices[2].name}`}>
+        <rect class="hit" x={hit[2][0]} y="100" width={hit[2][1]} height="260" />
+        <g class="lift">
+          <rect class="body" x="661" y="138" width="105" height="152" rx="6" />
+          <rect class="scr ink" x="673" y="150" width="81" height="116" rx="1" />
+          {poem.map((l, i) => (
+            <text class="poem" x="713.5" y={182 + i * 18} text-anchor="middle">{l}</text>
+          ))}
+          <text class="pg" x="713.5" y="258" text-anchor="middle">— 1 —</text>
+          <rect class="foot" x="700" y="290" width="26" height="10" rx="2" />
+        </g>
+        <text class="tk" x={cx[2]} y="336">03</text>
+      </g>
+
+      <!-- 04 iphone -->
+      <g class="dev" tabindex="0" role="button" data-i="3" aria-label={`${devices[3].kind} ${devices[3].name}`}>
+        <rect class="hit" x={hit[3][0]} y="120" width={hit[3][1]} height="240" />
+        <g class="lift">
+          <rect class="body" x="800" y="166" width="60" height="124" rx="9" />
+          <rect class="scr" x="805" y="182" width="50" height="90" rx="1" />
+          <rect class="spk" x="822" y="173" width="16" height="2.5" rx="1.2" />
+          <circle class="home" cx="830" cy="281" r="5.5" />
+          <text class="clk" x="830" y="224" text-anchor="middle" data-clock>10:42</text>
+          <rect class="foot" x="818" y="290" width="24" height="10" rx="2" />
+        </g>
+        <text class="tk" x={cx[3]} y="336">04</text>
+      </g>
+
+      <!-- 05 redmi -->
+      <g class="dev" tabindex="0" role="button" data-i="4" aria-label={`${devices[4].kind} ${devices[4].name}`}>
+        <rect class="hit" x={hit[4][0]} y="100" width={hit[4][1]} height="260" />
+        <g class="lift">
+          <rect class="body" x="894" y="144" width="69" height="146" rx="12" />
+          <rect class="scr" x="897" y="147" width="63" height="140" rx="10" />
+          <circle class="cam" cx="928.5" cy="155" r="2.2" />
+          <circle class="ring" cx="928.5" cy="246" r="24" />
+          <text class="clk" x="928.5" y="206" text-anchor="middle" data-clock>10:42</text>
+          <rect class="foot" x="916" y="290" width="25" height="10" rx="2" />
+        </g>
+        <text class="tk" x={cx[4]} y="336">05</text>
+      </g>
+
+      <!-- 06 honor -->
+      <g class="dev" tabindex="0" role="button" data-i="5" aria-label={`${devices[5].kind} ${devices[5].name}`}>
+        <rect class="hit" x={hit[5][0]} y="100" width={hit[5][1]} height="260" />
+        <g class="lift">
+          <rect class="body" x="997" y="143" width="69" height="147" rx="11" />
+          <rect class="scr" x="1000" y="146" width="63" height="141" rx="9" />
+          <rect class="pop" x="1025" y="139.5" width="13" height="4" rx="1.5" />
+          {[12, 20, 28].map((r) => <circle class="ring2" cx="1031.5" cy="248" r={r} />)}
+          <text class="clk" x="1031.5" y="206" text-anchor="middle" data-clock>10:42</text>
+          <rect class="foot" x="1019" y="290" width="25" height="10" rx="2" />
+        </g>
+        <text class="tk" x={cx[5]} y="336">06</text>
+      </g>
+
+      <!-- 07 band -->
+      <g class="dev" tabindex="0" role="button" data-i="6" aria-label={`${devices[6].kind} ${devices[6].name}`}>
+        <rect class="hit" x={hit[6][0]} y="140" width={hit[6][1]} height="220" />
+        <g class="lift">
+          <rect class="body" x="1104" y="176" width="22" height="116" rx="4" />
+          <rect class="body" x="1099" y="214" width="32" height="40" rx="10" />
+          <rect class="scr" x="1102" y="217" width="26" height="34" rx="8" />
+          <text class="clk s" x="1115" y="238" text-anchor="middle" data-clock>10:42</text>
+          <rect class="foot" x="1105" y="292" width="20" height="8" rx="2" />
+        </g>
+        <text class="tk" x={cx[6]} y="336">07</text>
+      </g>
+
+      <g class="scale">
+        <line x1="1038" y1="358" x2="1128" y2="358" />
+        <line x1="1038" y1="354" x2="1038" y2="362" /><line x1="1128" y1="354" x2="1128" y2="362" />
+        <text x="1083" y="371" text-anchor="middle">约 100 mm</text>
+      </g>
+    </svg>
+  </div>
+  <p class="mono dim hint">← 左右滑动 →</p>
+  <div class="cap" aria-live="polite">
+    <div>
+      <p class="mono dim" id="cap-i">00</p>
+      <h3 id="cap-n" data-def="七件，同一比例。">七件，同一比例。</h3>
+    </div>
+    <p class="mono on" id="cap-on" data-def="悬停或点按其中一件。">悬停或点按其中一件。</p>
+  </div>
+  <script type="application/json" id="dev-data" set:html={JSON.stringify(devices)} />
+</div>

@@ -1,39 +1,43 @@
 ---
 import Base from '../layouts/Base.astro';
+import Cabinet from '../components/Cabinet.astro';
 import { groups } from '../data/projects';
 import { devices, anime, books, games, music, film, bgm } from '../data/status';
-import { art, scroll } from '../data/art';
 import { asset, slug } from '../data/asset';
 import fs from 'node:fs';
 
 const thumb = (url: string) => {
   const f = `img/shots/${slug(url)}.webp`;
-  return fs.existsSync(`public/${f}`) ? asset(f) : null;
+  return fs.existsSync(`public/${f}`) ? asset(f) : '';
 };
 const cover = (id: number) => asset(`img/covers/${id}.webp`);
-
-const total = groups.reduce((n, g) => n + g.items.length, 0);
 const pad = (n: number) => String(n).padStart(2, '0');
-const rated = (xs: typeof anime, s: number) => xs.filter((x) => x.score === s);
+const used = new Set<string>();
+const sym = (n: string) => {
+  if (!/^[A-Za-z]/.test(n)) return [...n][0];
+  const letters = n.replace(/[^A-Za-z]/g, '');
+  const first = letters[0].toUpperCase();
+  for (const c of letters.slice(1)) {
+    const s = first + c.toLowerCase();
+    if (!used.has(s)) { used.add(s); return s; }
+  }
+  return first;
+};
+let k = 0;
+const tiles = groups.flatMap((g) => g.items.map((it) => ({ ...it, cat: g.title, short: g.short, no: pad(++k), sym: sym(it.name), img: thumb(it.url), host: new URL(it.url).host })));
+const total = tiles.length;
 const top = anime.filter((a) => a.score >= 9);
 const rest = anime.filter((a) => a.score < 9);
 const shelves: [string, typeof books][] = [['书', books], ['游戏', games], ['音乐', music], ['真人影视', film]];
-
-const clues: [string, string][] = [
-  ['常用', 'Typst、Go、Zig，偶尔也写写 Android'],
-  ['常做', '把书、诗与习题做成可以读的东西'],
-  ['常驻', 'Arch Linux 与 AUR，OpenWrt 路由器'],
-  ['常看', '动画、书与游戏，8 分以上才记下来'],
-];
 ---
-<Base title="xihale · 个人主页" description="爱东搞西搞，实力不强，心比天高。xihale 的项目与日常。">
+<Base title="xihale" description="xihale 的个人主页。爱东搞西搞，实力不强，心比天高。">
   <header class="bar">
     <a class="brand" href="#top"><i></i>xihale</a>
     <nav>
-      <a href="#about">自我介绍</a>
-      <a href="#collection">展柜</a>
+      <a href="#about">关于</a>
+      <a href="#cabinet">展柜</a>
       <a href="#projects">项目</a>
-      <a href="#status">状态</a>
+      <a href="#list">清单</a>
       <button class="theme" id="theme" aria-label="切换明暗主题" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
       </button>
@@ -50,168 +54,131 @@ const clues: [string, string][] = [
           <span><b>心比天高。</b></span>
         </h1>
         <div class="hero-meta mono">
-          <span>xihale — 个人主页</span>
-          <span>{total} 个项目 · 持续搞中</span>
-          <span class="scroll">向下</span>
+          <span>xihale</span>
+          <span class="scroll">往下</span>
         </div>
       </div>
     </section>
 
     <div class="wrap">
-      <section class="s" id="about">
-        <div class="s-head rv"><span class="no mono">01</span><h2>自我介绍</h2></div>
-        <div class="grid2">
-          <p class="lede rv">爱东搞西搞，<br />实力不强，<br />心比天高。<br /><em>所以一直在做。</em></p>
-          <div class="rv">
-            <p class="mono" style="color: var(--muted); margin-bottom: 1.4rem">关于我的线索 / clues</p>
-            <dl class="clues">
-              {clues.map(([k, v], i) => (
-                <div><dt class="mono">{pad(i + 1)} {k}</dt><dd>{v}</dd></div>
-              ))}
-            </dl>
-          </div>
+      <section class="sec" id="about">
+        <div class="rail rv"><span class="no mono">01</span><h2>关于</h2></div>
+        <div class="body">
+          <p class="lede rv">做的东西都不大。<br />多半只解决一个问题，<br />偶尔只是想知道做不做得出来。</p>
+          <dl class="nums rv">
+            <div><dt>{total}</dt><dd class="mono">个项目</dd></div>
+            <div><dt>{devices.length}</dt><dd class="mono">件设备</dd></div>
+            <div><dt>{anime.length}</dt><dd class="mono">部番，8 分以上</dd></div>
+          </dl>
+          <p class="links mono rv">
+            <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
+            <a href="https://xihale.top" target="_blank" rel="noopener">种墨 ↗</a>
+          </p>
         </div>
       </section>
 
-      <section class="s" id="collection">
-        <div class="s-head rv"><span class="no mono">02</span><h2>展柜</h2><span class="aside mono">收藏 / collection</span></div>
-
-        <div class="exhibit rv">
-          <div class="viewer" id="viewer" data-src={asset('models/dragon.glb')}>
-            <span class="loading mono">载入模型…</span>
-            <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-          </div>
-          <div class="placard">
-            <p class="mono dim">NO. 001 · glTF 模型</p>
-            <h3>玻璃龙</h3>
-            <p class="en">Stanford Dragon, in attenuated glass</p>
-            <p class="txt">1996 年斯坦福的那条龙，被做成了会折射的琥珀色玻璃。它背后的等高线是页面自己的颜色，所以明暗主题一换，龙身里的光也跟着换。</p>
-            <p class="mono hint"><span>↔</span> 左右拖动，旋转观看</p>
-            <p class="mono dim credit">模型 Stanford Computer Graphics Laboratory · Morgan McGuire<br />来自 Khronos glTF Sample Assets</p>
-          </div>
-        </div>
-
-        <div class="plates">
-          {art.map((a) => (
-            <figure class="rv" style={`--r:${(843 / a.h).toFixed(3)}`}>
-              <img src={asset(`img/art/${a.id}.webp`)} alt={a.zh ?? a.en} loading="lazy" decoding="async" width="700" height={Math.round((a.h / 843) * 700)} />
-              <figcaption>
-                <b>{a.zh ?? a.en}</b>
-                <span class="mono">{a.zh ? a.en : ''}</span>
-                <span class="mono dim">{a.artist} · {a.date}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-
-        <figure class="handscroll rv">
-          <img src={asset(`img/art/${scroll.id}.webp`)} alt={scroll.en} loading="lazy" decoding="async" width="700" height="244" />
-          <figcaption><b>{scroll.en}</b><span class="mono dim">{scroll.artist} · {scroll.date}</span></figcaption>
-        </figure>
-        <p class="mono dim src rv">绘画藏品为公有领域，来自 Art Institute of Chicago 开放获取 · 封面与评分来自 Bangumi</p>
+      <section class="sec" id="collection">
+        <div class="rail rv"><span class="no mono">02</span><h2>展柜</h2><p class="note">现役设备。</p></div>
+        <div class="body rv"><Cabinet /></div>
       </section>
 
-      <section class="s" id="projects">
-        <div class="s-head rv"><span class="no mono">03</span><h2>项目列表</h2><span class="aside mono">{total} 项 · {groups.length} 类</span></div>
-        {groups.map((g) => (
-          <div class="group rv">
-            <header><h3>{g.title}</h3><span class="mono">{pad(g.items.length)}</span></header>
-            <ul>
-              {g.items.map((it, i) => (
-                <li>
-                  <a class:list={['row', { arch: it.archived }]} href={it.url} target="_blank" rel="noopener">
-                    <span class="idx mono">{pad(i + 1)}</span>
-                    <span class="t">
-                      <span class="name">{it.name}{it.archived && <span class="tag">存档</span>}</span>
-                      <span class="desc">{it.desc}</span>
-                    </span>
-                    <span class="th" aria-hidden="true">
-                      {thumb(it.url) ? <img src={thumb(it.url)!} alt="" loading="lazy" decoding="async" width="720" height="450" /> : <b>{[...it.name][0]}</b>}
-                    </span>
-                    <span class="go" aria-hidden="true">↗</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </section>
-
-      <section class="s" id="status">
-        <div class="s-head rv"><span class="no mono">04</span><h2>状态</h2></div>
-
-        <div class="grid2 block rv">
-          <div>
-            <h3 class="sub">设备</h3>
-            <dl class="devices">
-              {devices.map(([k, v]) => <div><dt class="mono">{k}</dt><dd>{v}</dd></div>)}
-            </dl>
-          </div>
-          <div>
-            <h3 class="sub">喜欢的歌</h3>
-            <p class="empty">待补充</p>
-          </div>
+      <section class="sec" id="projects">
+        <div class="rail rv">
+          <span class="no mono">03</span><h2>项目</h2>
+          <p class="note">{total} 个，按类别排。<br />其中两个已存档。</p>
+          <ul class="filter">
+            <li><button class="on mono" data-cat="*" type="button"><span>全部</span><i>{total}</i></button></li>
+            {groups.map((g) => <li><button class="mono" data-cat={g.title} type="button"><span>{g.title}</span><i>{g.items.length}</i></button></li>)}
+          </ul>
         </div>
-
-        <div class="block rv">
-          <h3 class="sub">番<span class="mono">动画 · 8 分以上 · {anime.length}</span></h3>
-          <div class="wall-top">
-            {top.map((a) => (
-              <a class="fig" href={bgm(a.id)} target="_blank" rel="noopener">
-                <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
-                <span class="cap"><i>{a.score}</i><b>{a.title}</b></span>
-              </a>
-            ))}
-          </div>
-          <div class="wall">
-            {rest.map((a) => (
-              <a class="poster" href={bgm(a.id)} target="_blank" rel="noopener" title={`${a.title} · ${a.score} 分`}>
-                <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
-                <span class="tip">{a.title}</span>
+        <div class="body rv">
+          <div class="tiles" id="tiles">
+            {tiles.map((t) => (
+              <a class:list={['tile', { arch: t.archived }]} href={t.url} target="_blank" rel="noopener"
+                data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
+                <span class="n mono">{t.no}</span>
+                <span class="c mono">{t.short}</span>
+                <b class="sym">{t.sym}</b>
+                <span class="nm">{t.name}</span>
               </a>
             ))}
           </div>
         </div>
+      </section>
 
-        <div class="block rv shelf">
-          {shelves.map(([label, list]) => (
-            <div>
-              <h3 class="sub">{label}<span class="mono">8 分以上</span></h3>
-              <div class="wall small">
-                {[...list].sort((x, y) => y.score - x.score).map((x) => (
-                  <a class="poster" href={bgm(x.id)} target="_blank" rel="noopener" title={`${x.title} · ${x.score} 分`}>
-                    <img src={cover(x.id)} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
-                    <span class="score">{x.score}</span>
-                    <span class="tip">{x.title}</span>
-                  </a>
-                ))}
-              </div>
+      <section class="sec" id="list">
+        <div class="rail rv"><span class="no mono">04</span><h2>清单</h2><p class="note">只记 8 分以上的。</p></div>
+        <div class="body">
+          <div class="block rv">
+            <h3 class="sub">番<span class="mono">{anime.length}</span></h3>
+            <div class="wall-top">
+              {top.map((a) => (
+                <a class="fig" href={bgm(a.id)} target="_blank" rel="noopener">
+                  <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
+                  <span class="cap"><i>{a.score}</i><b>{a.title}</b></span>
+                </a>
+              ))}
             </div>
-          ))}
+            <div class="wall">
+              {rest.map((a) => (
+                <a class="poster" href={bgm(a.id)} target="_blank" rel="noopener" title={`${a.title} · ${a.score} 分`}>
+                  <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
+                  <span class="tip">{a.title}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div class="block rv shelf">
+            {shelves.map(([label, list]) => (
+              <div>
+                <h3 class="sub">{label}</h3>
+                <div class="wall small">
+                  {[...list].sort((x, y) => y.score - x.score).map((x) => (
+                    <a class="poster" href={bgm(x.id)} target="_blank" rel="noopener" title={`${x.title} · ${x.score} 分`}>
+                      <img src={cover(x.id)} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
+                      <span class="score">{x.score}</span>
+                      <span class="tip">{x.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div>
+              <h3 class="sub">歌</h3>
+              <p class="empty">还在挑。</p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   </main>
 
   <footer>
-    <div class="wrap">
-      <p class="big">在 <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub</a> 找到我。</p>
-      <p class="meta mono">© 2026 xihale<br />Astro · WebGL · three.js</p>
+    <p class="word" aria-hidden="true">xihale</p>
+    <div class="wrap foot">
+      <p class="mono">© 2026 xihale</p>
+      <p class="mono links">
+        <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://xihale.top" target="_blank" rel="noopener">种墨 ↗</a>
+      </p>
     </div>
   </footer>
 
+  <aside id="peek" aria-hidden="true">
+    <div class="pimg"></div>
+    <p class="pn"></p>
+    <p class="pd"></p>
+    <p class="ph mono"></p>
+  </aside>
+
   <script>
     import { initJulia } from '../scripts/julia';
+    import { initCabinet, initProjects } from '../scripts/ui';
 
     initJulia(document.getElementById('julia') as HTMLCanvasElement);
-
-    const viewer = document.getElementById('viewer')!;
-    new IntersectionObserver((es, o) => {
-      if (es[0].isIntersecting) {
-        o.disconnect();
-        import('../scripts/model').then((m) => m.initModel(viewer)).catch(() => viewer.classList.add('fail'));
-      }
-    }, { rootMargin: '300px' }).observe(viewer);
+    initCabinet();
+    initProjects();
 
     document.getElementById('theme')!.addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -221,7 +188,7 @@ const clues: [string, string][] = [
 
     const io = new IntersectionObserver((es) => {
       es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { rootMargin: '0px 0px -8% 0px' });
+    }, { rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.rv').forEach((el) => io.observe(el));
   </script>
 </Base>

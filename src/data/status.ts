@@ -1,9 +1,12 @@
-export const devices: [string, string][] = [
-  ['电脑', '机械革命 Yaoshi15Pro Series（GM5PQ0A）'],
-  ['手机', 'Redmi Turbo 4 Pro、iPhone 7s、HONOR 9X Pro'],
-  ['平板', 'Mi Pad 6 Pro'],
-  ['阅读器', 'Kindle KWP3'],
-  ['穿戴', 'HUAWEI Band 9'],
+export type Device = { kind: string; name: string; on: string };
+export const devices: Device[] = [
+  { kind: '电脑', name: '机械革命 Yaoshi15Pro Series（GM5PQ0A）', on: '终端里在打字' },
+  { kind: '平板', name: 'Mi Pad 6 Pro', on: '一盘数独' },
+  { kind: '阅读器', name: 'Kindle KWP3', on: '《静夜思》' },
+  { kind: '手机', name: 'iPhone 7s', on: '锁屏，时间是真的' },
+  { kind: '手机', name: 'Redmi Turbo 4 Pro', on: '锁屏，同上' },
+  { kind: '手机', name: 'HONOR 9X Pro', on: '锁屏，同上' },
+  { kind: '穿戴', name: 'HUAWEI Band 9', on: '表盘，时间也是真的' },
 ];
 
 export type Rated = { title: string; id: number; score: number };
