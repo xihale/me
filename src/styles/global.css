@@ -76,13 +76,11 @@ h1, h2, h3, p { margin: 0; }
 .hero .wrap { position: relative; z-index: 2; width: 100%; }
 .hero h1 {
   font-family: var(--serif); font-weight: 300;
-  font-size: clamp(2.6rem, 9.2vw, 9.5rem);
+  font-size: clamp(4rem, 17vw, 17rem);
   line-height: 1.08; letter-spacing: -0.02em;
 }
 .hero h1 span { display: block; overflow: hidden; }
 .hero h1 span b { display: block; font-weight: inherit; transform: translateY(105%); animation: rise 1.2s cubic-bezier(0.2, 0.7, 0.1, 1) forwards; }
-.hero h1 span:nth-child(2) b { animation-delay: 0.12s; padding-left: clamp(0rem, 8vw, 8rem); }
-.hero h1 span:nth-child(3) b { animation-delay: 0.24s; color: var(--accent); padding-left: clamp(0rem, 16vw, 16rem); }
 @keyframes rise { to { transform: none; } }
 .hero-meta { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: clamp(1.5rem, 5vh, 3.5rem); padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); }
 .hero-meta .scroll { display: inline-flex; gap: 0.6rem; align-items: center; }
@@ -264,12 +262,6 @@ h1, h2, h3, p { margin: 0; }
 .empty { color: var(--faint); font-family: var(--serif); font-weight: 300; font-size: 1.1rem; }
 
 /* ---------- footer ---------- */
-footer { border-top: 1px solid var(--ink); overflow: hidden; }
-.word {
-  font-family: var(--serif); font-weight: 300; text-align: center; line-height: 0.95; letter-spacing: -0.04em;
-  font-size: 24vw; margin: 0; padding: 0.04em 0 0; color: transparent; -webkit-text-stroke: 1px var(--line); user-select: none;
-  transition: -webkit-text-stroke-color 0.4s;
-}
-.word:hover { -webkit-text-stroke-color: var(--accent); }
-.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-top: 1.2rem; padding-bottom: 2rem; color: var(--muted); border-top: 1px solid var(--line); }
+footer { border-top: 1px solid var(--ink); }
+.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-top: 1.4rem; padding-bottom: 2rem; color: var(--muted); }
 .foot .links { margin-top: 0; }
