@@ -1,6 +1,7 @@
 // A slowly drifting Julia set, drawn as ink contour lines. Pointer nudges the parameter.
 const VS = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
 const FS = `
+#extension GL_OES_standard_derivatives : enable
 precision highp float;
 uniform vec2 uRes; uniform float uT; uniform vec2 uM; uniform vec2 uView;
 uniform vec3 uBg, uInk, uAcc;
@@ -20,11 +21,19 @@ void main(){
   vec3 col = uBg;
   if (esc) {
     float s = n - log2(log2(dot(z, z))) + 4.;
+    // 等高线间距固定在 s 空间;线宽改用像素空间导数,避免外层出现大块粗带、
+    // 内层细线又因采样不足断成虚线
     float band = abs(fract(s * 0.5) - 0.5) * 2.;
-    float line = 1. - smoothstep(0.0, 0.1, band);
+    float d = max(fwidth(s), 1e-4);
+    float aa = d * 0.5;
+    // 线距小于几个像素时改用平均覆盖率,否则细节会闪成噪点
+    float line = mix(1. - smoothstep(0., aa, band), clamp(d * 0.5, 0., 1.), smoothstep(0.55, 1.3, d));
     float fade = exp(-s * 0.06);
-    col = mix(uBg, uInk, line * (0.05 + 0.4 * fade));
-    col = mix(col, uAcc, smoothstep(0.35, 0.9, fade) * line * 0.85);
+    // 亮底上的细线需要更高的不透明度,否则整片发灰
+    float light = step(0.5, dot(uBg, vec3(0.2126, 0.7152, 0.0722)));
+    float ink = line * mix(mix(0.05, 0.3, light), mix(0.4, 0.5, light), fade);
+    col = mix(uBg, uInk, ink);
+    col = mix(col, uAcc, smoothstep(0.35, 0.9, fade) * line * mix(0.85, 0.8, light));
   } else {
     col = mix(uBg, uAcc, 0.07);
   }
@@ -40,6 +49,7 @@ function hex(v: string): [number, number, number] {
 export function initJulia(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'low-power' });
   if (!gl) return;
+  gl.getExtension('OES_standard_derivatives');
   const sh = (t: number, src: string) => {
     const s = gl.createShader(t)!;
     gl.shaderSource(s, src);
@@ -78,7 +88,8 @@ export function initJulia(canvas: HTMLCanvasElement) {
     gl.uniform3fv(uAcc, hex(cs.getPropertyValue('--accent')));
   };
   const resize = () => {
-    const k = Math.min(devicePixelRatio || 1, 1.5) * (innerWidth < 700 ? 0.6 : 0.75);
+    // 手机竖屏的像素少,画布按 dpr 上限 2 倍再乘 0.75 取样,否则细线会糊
+    const k = Math.min(devicePixelRatio || 1, narrow.matches ? 2 : 1.5) * 0.75;
     canvas.width = Math.max(1, Math.round(canvas.clientWidth * k));
     canvas.height = Math.max(1, Math.round(canvas.clientHeight * k));
     gl.viewport(0, 0, canvas.width, canvas.height);
