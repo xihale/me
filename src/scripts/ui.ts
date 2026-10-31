@@ -123,12 +123,31 @@ export function initProjects() {
     })
   );
 
-  const peek = document.getElementById('peek')!;
-  const pimg = peek.querySelector('.pimg') as HTMLElement;
-  const pn = peek.querySelector('.pn') as HTMLElement;
-  const pd = peek.querySelector('.pd') as HTMLElement;
-  const ph = peek.querySelector('.ph') as HTMLElement;
-  const fine = matchMedia('(hover: hover) and (min-width: 861px)');
+  // 没有封面的项目:用名字做种子画一张 Julia 集,只取 alpha 当 mask,颜色跟随主题
+  const frac = (seed: string) => {
+    let h = 2166136261;
+    for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+    const SETS = [[-0.8, 0.156], [-0.4, 0.6], [0.285, 0.01], [-0.70176, -0.3842], [-0.835, -0.2321], [0.355, 0.355], [-0.7269, 0.1889]];
+    const [cx, cy] = SETS[(h >>> 0) % SETS.length];
+    const W = 256, H = 160, sc = 1.35, max = 32;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const px = cv.getContext('2d')!.createImageData(W, H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let zx = (x / W - 0.5) * sc * 2 * (W / H), zy = (y / H - 0.5) * sc * 2, n = 0;
+      while (n < max && zx * zx + zy * zy < 4) { const nx = zx * zx - zy * zy + cx; zy = 2 * zx * zy + cy; zx = nx; n++; }
+      px.data[(y * W + x) * 4 + 3] = n === max ? 255 : Math.round((n / max) ** 0.6 * 210);
+    }
+    cv.getContext('2d')!.putImageData(px, 0, 0);
+    return cv.toDataURL();
+  };
+  tiles.forEach((t) => {
+    const c = t.querySelector<HTMLCanvasElement>('.frac');
+    if (!c) return;
+    const url = `url("${frac(t.dataset.name!)}")`;
+    c.style.maskImage = url;
+    c.style.setProperty('-webkit-mask-image', url);
+  });
 
   const sheet = document.getElementById('sheet') as HTMLDialogElement | null;
   const sImg = document.getElementById('sheet-img');
@@ -138,6 +157,7 @@ export function initProjects() {
   const sDesc = document.getElementById('sheet-desc');
   const sBtn = document.getElementById('sheet-btn') as HTMLAnchorElement | null;
   const sClose = document.getElementById('sheet-close');
+  const fine = matchMedia('(hover: hover) and (min-width: 861px)');
 
   if (sheet) {
     sClose?.addEventListener('click', () => sheet.close());
@@ -155,35 +175,13 @@ export function initProjects() {
     }
   }
 
-  const open = (t: HTMLElement) => {
-    if (!fine.matches) return;
-    const d = t.dataset;
-    pimg.innerHTML = d.img ? `<img src="${d.img}" alt="" />` : `<b>${d.sym}</b>`;
-    pn.textContent = d.name!;
-    pd.textContent = d.desc!;
-    ph.textContent = d.host!;
-    const r = t.getBoundingClientRect();
-    const w = 300, h = peek.offsetHeight || 260;
-    let x = r.right + 10;
-    if (x + w > innerWidth - 12) x = r.left - w - 10;
-    let y = r.top - 8;
-    y = Math.max(72, Math.min(y, innerHeight - h - 12));
-    peek.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-    peek.classList.add('show');
-  };
-  const close = () => peek.classList.remove('show');
-
   tiles.forEach((t) => {
-    t.addEventListener('pointerenter', () => open(t));
-    t.addEventListener('focus', () => open(t));
-    t.addEventListener('pointerleave', close);
-    t.addEventListener('blur', close);
     t.addEventListener('click', (ev) => {
       if (fine.matches || !sheet) return;
       ev.preventDefault();
       const d = t.dataset;
       if (sImg) sImg.innerHTML = d.img ? `<img src="${d.img}" alt="${d.name}" />` : `<b>${d.sym}</b>`;
-      if (sCat) sCat.textContent = `${t.querySelector('.n')?.textContent || ''} · ${d.cat || ''}`;
+      if (sCat) sCat.textContent = d.cat || '';
       if (sHost) sHost.textContent = d.host || '';
       if (sName) sName.textContent = d.name || '';
       if (sDesc) sDesc.textContent = d.desc || '';
@@ -191,5 +189,4 @@ export function initProjects() {
       sheet.showModal();
     });
   });
-  addEventListener('scroll', close, { passive: true });
 }

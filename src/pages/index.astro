@@ -16,7 +16,15 @@ const thumb = (url: string) => {
   return fs.existsSync(`public/${f}`) ? asset(f) : '';
 };
 const cover = (id: number) => asset(`img/covers/${id}.webp`);
-const tiles = entries.map((e) => ({ ...e, img: thumb(e.url) }));
+
+const FEATURED = ['snirectAndroid', 'Syndi', 'Upix', 'EasyTier Android'];
+const tiles = entries.map((e) => ({
+  ...e,
+  img: thumb(e.url),
+  feat: FEATURED.includes(e.name),
+}));
+const hang = FEATURED.map((name) => tiles.find((t) => t.name === name)!);
+const plates = tiles.filter((t) => !t.feat);
 const total = tiles.length;
 const top = anime.filter((a) => a.score >= 9);
 const rest = anime.filter((a) => a.score < 9);
@@ -81,16 +89,32 @@ const shelfGroups = [
           <a class="all mono" href={asset('projects')}>详情 →</a>
         </div>
         <div class="body rv">
-          <div class="tiles" id="tiles">
-            {tiles.map((t) => (
-              <a class="tile" href={t.url} target="_blank" rel="noopener"
-                data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
-                <span class="n mono">{t.no}</span>
-                <span class="c mono">{t.short}</span>
-                <b class="sym">{t.sym}</b>
-                <span class="nm">{t.name}</span>
-              </a>
-            ))}
+          <div id="tiles">
+            <div class="hang">
+              {hang.map((t) => (
+                <a class="tile feat" href={t.url} target="_blank" rel="noopener"
+                  data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
+                  <span class="cv">
+                    {t.img ? <img src={t.img} alt="" loading="lazy" decoding="async" /> : <canvas class="frac" aria-hidden="true"></canvas>}
+                  </span>
+                  <span class="cap">
+                    <b class="nm">{t.name}</b>
+                    <span class="ds">{t.desc}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+            <div class="plates">
+              {plates.map((t) => (
+                <a class="tile" href={t.url} target="_blank" rel="noopener"
+                  data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
+                  <span class="cv">
+                    {t.img ? <img src={t.img} alt="" loading="lazy" decoding="async" /> : <canvas class="frac" aria-hidden="true"></canvas>}
+                  </span>
+                  <span class="cap"><b class="nm">{t.name}</b></span>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -170,12 +194,7 @@ const shelfGroups = [
 
   <Footer current="home" />
 
-  <aside id="peek" aria-hidden="true">
-    <div class="pimg"></div>
-    <p class="pn"></p>
-    <p class="pd"></p>
-    <p class="ph mono"></p>
-  </aside>
+
 
   <dialog id="sheet" class="sheet" closedby="any" aria-label="项目详情">
     <div class="sheet-box">
