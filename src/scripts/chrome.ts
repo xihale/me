@@ -6,6 +6,10 @@ export function initChrome() {
     addEventListener('scroll', atTop, { passive: true });
   }
 
+  const markBelow = () => document.body.classList.toggle('below', scrollY > innerHeight * 0.62);
+  markBelow();
+  addEventListener('scroll', markBelow, { passive: true });
+
   const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.bar nav a')].filter((a) =>
     a.getAttribute('href')?.startsWith('#')
   );

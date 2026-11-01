@@ -125,27 +125,87 @@ function spline(p: Pt[]) {
   return d;
 }
 
-/** 星轨:穿过五枚节点的实测中心,两端沿同一条抛物线甩出画外;流星沿它自右上滑向左下 */
+const STAR = `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/></svg>`;
+
+/** 点击索引:词收成一颗星,飞到对应栏目标题上,然后消失 */
+function bindFlight(rows: HTMLAnchorElement[], reduced: boolean) {
+  let flying = false;
+  for (const row of rows) {
+    row.addEventListener('click', (ev) => {
+      if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+      const id = row.getAttribute('href')?.replace(/^#/, '');
+      const target = id ? document.getElementById(id) : null;
+      if (!target || reduced) return;
+      ev.preventDefault();
+      if (flying) return;
+      flying = true;
+
+      const head = target.querySelector('h2') ?? target;
+      const from = (row.querySelector('.nd') ?? row).getBoundingClientRect();
+      const hr = head.getBoundingClientRect();
+      const barH = document.querySelector('.bar')?.getBoundingClientRect().height ?? 0;
+      const startY = window.scrollY;
+      const destY = Math.max(0, hr.top + startY - barH - 12);
+      const x0 = from.left + from.width / 2;
+      const y0 = from.top + from.height / 2;
+      const x1 = hr.left + 6;
+      const y1 = barH + 12 + hr.height / 2;
+
+      const star = document.createElement('div');
+      star.className = 'fly-star';
+      star.innerHTML = STAR;
+      star.style.opacity = '0';
+      star.style.transform = `translate(${x0}px, ${y0}px) translate(-50%, -50%) scale(0.45)`;
+      document.body.appendChild(star);
+      row.classList.add('depart');
+
+      const root = document.documentElement;
+      const prev = root.style.scrollBehavior;
+      root.style.scrollBehavior = 'auto';
+      const DUR = 820;
+      const t0 = performance.now();
+      const frame = (now: number) => {
+        const t = Math.min(1, (now - t0) / DUR);
+        const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+        window.scrollTo(0, startY + (destY - startY) * e);
+        const sc = t < 0.55 ? 0.55 + t * 0.8 : 1 - (t - 0.55) * 1.3;
+        const op = t < 0.08 ? t / 0.08 : t > 0.86 ? (1 - t) / 0.14 : 1;
+        star.style.transform = `translate(${x0 + (x1 - x0) * e}px, ${y0 + (y1 - y0) * e}px) translate(-50%, -50%) scale(${sc.toFixed(3)})`;
+        star.style.opacity = op.toFixed(3);
+        if (t < 1) {
+          requestAnimationFrame(frame);
+          return;
+        }
+        star.remove();
+        row.classList.remove('depart');
+        root.style.scrollBehavior = prev;
+        history.pushState(null, '', `#${id}`);
+        flying = false;
+      };
+      requestAnimationFrame(frame);
+    });
+  }
+}
+
+/** 星轨:穿过节点的一条连贯尾迹,末端沿左边落到画面底。没有流动的光段。 */
 export function initHeroRail() {
   const hero = document.querySelector<HTMLElement>('.hero');
-  const svg = hero?.querySelector<SVGSVGElement>('.sky');
   const rows = [...(hero?.querySelectorAll<HTMLAnchorElement>('.hero-fall .row') ?? [])];
-  if (!hero || !svg || rows.length < 3) return;
-
-  const rail = svg.querySelector<SVGPathElement>('.rail');
-  const group = svg.querySelector<SVGGElement>('.comet-g');
-  const glow = svg.querySelector<SVGPathElement>('.comet-glow');
-  const mid = svg.querySelector<SVGPathElement>('.comet-mid');
-  const core = svg.querySelector<SVGPathElement>('.comet-core');
-  if (!rail || !group || !glow || !mid || !core) return;
-  const paths = [...svg.querySelectorAll<SVGPathElement>('path')];
+  if (!hero || rows.length < 3) return;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  bindFlight(rows, reduced);
 
-  let frac: number[] = [];
-  const lit: boolean[] = [];
+  const svg = hero.querySelector<SVGSVGElement>('.sky');
+  const rail = svg?.querySelector<SVGPathElement>('.rail');
+  const glow = svg?.querySelector<SVGPathElement>('.rail-glow');
+  if (!svg || !rail || !glow) return;
+  const paths = [glow, rail];
 
   const draw = () => {
-    if (matchMedia('(max-width: 860px)').matches) return;
+    if (matchMedia('(max-width: 860px)').matches) {
+      document.documentElement.style.removeProperty('--rail-x');
+      return;
+    }
     const hb = hero.getBoundingClientRect();
     const nodes: Pt[] = rows.map((r) => {
       const b = r.querySelector('.nd')!.getBoundingClientRect();
@@ -153,67 +213,23 @@ export function initHeroRail() {
     });
     if (!hb.width || nodes.some((n) => !n.y)) return;
 
-    // x(y)=ay²+by+c 由首、中、末三点定形;两端顺它延到画面之外
-    const [n0, , n2, , n4] = nodes;
-    const h = n2.y - n0.y || 1;
-    const a = (n0.x - 2 * n2.x + n4.x) / (2 * h * h);
-    const b = (n2.x - n0.x - a * (n2.y ** 2 - n0.y ** 2)) / (n2.y - n0.y);
-    const at = (y: number) => a * y * y + b * y + n0.x - a * n0.y ** 2 - b * n0.y;
-    const yTop = n0.y - Math.max(260, hb.height * 0.45);
-    const yEnd = n4.y + Math.max(150, hb.height * 0.18);
-    const pts: Pt[] = [{ x: at(yTop), y: yTop }, ...nodes, { x: at(yEnd), y: yEnd }];
+    const nL = nodes[nodes.length - 1];
+    const wrap = hero.querySelector('.wrap');
+    const wb = wrap?.getBoundingClientRect();
+    const padL = wrap ? parseFloat(getComputedStyle(wrap).paddingLeft) || 16 : 16;
+    const endX = Math.max(12, (wb ? wb.left - hb.left : 0) + Math.min(14, padL * 0.35));
+    const endY = hb.height - 1;
+    const d = spline(nodes)
+      + ` C${f1(nL.x)} ${f1(nL.y + 40)} ${f1(endX)} ${f1(nL.y + (endY - nL.y) * 0.5)} ${f1(endX)} ${f1(endY)}`;
+    document.documentElement.style.setProperty('--rail-x', `${endX.toFixed(1)}px`);
+    document.documentElement.style.setProperty('--hero-h', `${Math.round(hb.height)}px`);
 
-    const d = spline(pts);
     svg.setAttribute('viewBox', `0 0 ${Math.round(hb.width)} ${Math.round(hb.height)}`);
     svg.setAttribute('preserveAspectRatio', 'none');
     for (const p of paths) p.setAttribute('d', d);
-
-    // 每个节点落在整条路径的哪个位置(0..1)
-    const L = rail.getTotalLength();
-    const N = 720;
-    const samples = Array.from({ length: N + 1 }, (_, i) => rail.getPointAtLength((L * i) / N));
-    frac = nodes.map((n) => {
-      let best = 0, bd = Infinity;
-      for (let i = 0; i < samples.length; i++) {
-        const dd = (samples[i].x - n.x) ** 2 + (samples[i].y - n.y) ** 2;
-        if (dd < bd) { bd = dd; best = i; }
-      }
-      return best / N;
-    });
   };
 
   draw();
   addEventListener('resize', draw);
   document.fonts?.ready.then(draw);
-  if (reduced) return;
-
-  // 流星:9s 一圈;头部经过某个节点时,把那一行点亮
-  const CYCLE = 9000, TRAVEL = 1016, OFF = 34, HEAD = 116;
-  const narrow = matchMedia('(max-width: 860px)');
-  let t0 = 0;
-  const tick = (now: number) => {
-    if (!t0) t0 = now;
-    if (narrow.matches) {
-      requestAnimationFrame(tick);
-      return;
-    }
-    const p = (((now - t0) % CYCLE) + CYCLE) % CYCLE / CYCLE;
-    const off = OFF - TRAVEL * p;
-    const off1 = `${off.toFixed(2)}`;
-    glow.style.strokeDashoffset = off1;
-    mid.style.strokeDashoffset = off1;
-    core.style.strokeDashoffset = `${(off - HEAD).toFixed(2)}`;
-    const fade = Math.max(0, Math.min((p - 0.03) / 0.13, (0.97 - p) / 0.09, 1));
-    group.style.opacity = fade.toFixed(3);
-    const head = (TRAVEL * p + HEAD) / 1000;
-    for (let i = 0; i < rows.length; i++) {
-      const on = frac.length > i && Math.abs(head - frac[i]) < 0.04;
-      if (on !== lit[i]) {
-        lit[i] = on;
-        rows[i].classList.toggle('lit', on);
-      }
-    }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
 }

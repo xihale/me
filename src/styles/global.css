@@ -83,7 +83,7 @@ a:focus-visible {
   .bar nav { gap: 0.7rem; }
 }
 
-/* ---------- 星轨:一条穿过五枚节点的曲线,两端甩出画外 ---------- */
+/* ---------- 星轨:连贯尾迹,没有中间断开的光段 ---------- */
 .sky {
   position: absolute; inset: 0; z-index: 0;
   width: 100%; height: 100%;
@@ -91,14 +91,9 @@ a:focus-visible {
   animation: bgIn 1.6s 0.2s both;
 }
 @keyframes bgIn { from { opacity: 0; } }
-.sky .comet-glow, .sky .comet-mid, .sky .comet-core { fill: none; stroke: var(--accent); stroke-linecap: round; }
-/* 长尾与亮核同速,核的相位前移 116(150-34),核就骑在尾端;位置由脚本逐帧写 */
-.sky .comet-glow, .sky .comet-mid { stroke-dasharray: 150 1400; }
-.sky .comet-core { stroke-dasharray: 34 1400; }
-.sky .comet-glow { stroke-width: 7; opacity: 0.13; filter: blur(4px); }
-.sky .comet-mid { stroke-width: 2.4; opacity: 0.34; }
-.sky .comet-core { stroke-width: 1.4; opacity: 1; }
-.sky .comet-g { opacity: 0; }
+.sky .rail, .sky .rail-glow { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.sky .rail { stroke-width: 1.25; }
+.sky .rail-glow { stroke: var(--accent); stroke-width: 3.5; opacity: 0.2; filter: blur(1.5px); }
 
 /* ---------- hero ---------- */
 .hero { position: relative; min-height: calc(100svh - 4.25rem); display: flex; flex-direction: column; padding-top: var(--bar); }
@@ -152,7 +147,7 @@ a:focus-visible {
   flex: none; width: 5px; height: 5px; border-radius: 50%; margin-right: 1.15rem;
   background: var(--accent); opacity: 0.55;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
-  transition: opacity 0.45s, box-shadow 0.45s;
+  transition: opacity 0.45s, box-shadow 0.45s, transform 0.22s;
 }
 .hero-fall b {
   font-family: var(--serif); font-weight: 500;
@@ -165,12 +160,15 @@ a:focus-visible {
   transition: color 0.4s;
 }
 .hero-fall .en i { font-style: normal; margin-left: 0.65rem; opacity: 0.7; }
-.hero-fall .row:is(:hover, .lit) b { color: var(--accent); }
-.hero-fall .row:is(:hover, .lit) .en { color: var(--muted); }
-.hero-fall .row:is(:hover, .lit) .nd {
+.hero-fall .row:hover b { color: var(--accent); }
+.hero-fall .row:hover .en { color: var(--muted); }
+.hero-fall .row:hover .nd {
   opacity: 1;
   box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent) 42%, transparent);
 }
+.hero-fall .row.depart b,
+.hero-fall .row.depart .en { opacity: 0; filter: blur(1.5px); transition: opacity 0.22s ease, filter 0.22s ease; }
+.hero-fall .row.depart .nd { opacity: 0; transform: scale(0.2); }
 
 @media (max-width: 860px) {
   .sky { display: none; }
@@ -209,7 +207,8 @@ html.js .rv.in { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
   .who { animation: none; opacity: 1; transform: none; }
   .sky { animation: none; }
-  .sky .comet-g { display: none; }
+  .night .shoot { animation: none; opacity: 0; }
+  .rise-mark, .hero-fall .row.depart b, .hero-fall .row.depart .en, .hero-fall .nd { transition: none; }
   .hero-fall .row { animation: none; opacity: 1; transform: none; }
   .hero-fall b, .hero-fall .en, .hero-fall .nd { transition: none; }
   .rv, html.js .rv { opacity: 1; transform: none; transition: none; }
@@ -218,6 +217,77 @@ html.js .rv.in { opacity: 1; transform: none; }
   .bar, .tile, .tile .cv img { transition: none; }
   .poster img, .track img, .fig img { transition: none; transform: none !important; }
   .poster .tip, .fig .tip { transition: none; transform: none !important; }
+}
+
+.fly-star {
+  position: fixed; left: 0; top: 0; z-index: 40;
+  width: 15px; height: 15px; color: var(--accent);
+  pointer-events: none;
+}
+main, footer { position: relative; z-index: 1; }
+
+/* 往下之后,左边尾迹还在;悬停才显出回顶的星 */
+.rise {
+  position: fixed; z-index: 15; bottom: 0;
+  left: calc(var(--rail-x, 18px) - 16px);
+  width: 36px; height: 46vh;
+  color: var(--accent); pointer-events: none;
+}
+.rise:focus-visible { outline: none; text-decoration: none; }
+body.below .rise { pointer-events: auto; }
+.rail-down {
+  position: absolute; z-index: 2; pointer-events: none;
+  left: var(--rail-x, -40px); top: var(--hero-h, 100vh); bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 62%, transparent), color-mix(in srgb, var(--accent) 16%, transparent));
+}
+@media (max-width: 860px) {
+  .rail-down { display: none; }
+  .rise { height: 38vh; }
+}
+.rise-mark {
+  position: absolute; left: 9px; bottom: 0.9rem;
+  width: 13px; height: 13px; opacity: 0;
+  transform: scale(0.86);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.16, 0.8, 0.2, 1);
+}
+.rise:is(:hover, :focus-visible) .rise-mark { opacity: 1; transform: scale(1); }
+
+/* 页边几颗静止的星,和一道偶尔划过的短迹 */
+.night {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.night .star {
+  position: absolute; width: var(--s, 3px); height: var(--s, 3px);
+  background: var(--ink); opacity: var(--o, 0.22);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+.night .star.c, .night .star.f { background: var(--accent); }
+.night .a { top: 18%; left: 2.6%; --s: 3px; --o: 0.34; }
+.night .b { top: 37%; left: 4.8%; --s: 2px; --o: 0.18; }
+.night .c { top: 63%; right: 3.2%; --s: 4px; --o: 0.4; }
+.night .d { top: 81%; left: 2.2%; --s: 2px; --o: 0.2; }
+.night .e { top: 28%; right: 8%; --s: 2px; --o: 0.16; }
+.night .f { top: 72%; right: 6.5%; --s: 3px; --o: 0.28; }
+.night .g { bottom: 11%; right: 2.4%; --s: 2px; --o: 0.18; }
+.night .streak {
+  position: absolute; width: var(--w, 52px); height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: 0.4; transform: rotate(var(--r, -32deg));
+}
+.night .s { top: 22%; right: 2.4%; --w: 68px; --r: -34deg; }
+.night .t { top: 58%; left: 1.2%; --w: 46px; --r: 42deg; opacity: 0.28; }
+.night .shoot {
+  top: 14%; right: 0; --w: 84px;
+  animation: shoot 18s ease-in-out infinite;
+}
+@keyframes shoot {
+  0%, 64% { transform: translate3d(24px, -12px, 0) rotate(-32deg); opacity: 0; }
+  72% { opacity: 0.5; }
+  88% { transform: translate3d(-7vw, 9vh, 0) rotate(-32deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (max-width: 860px) {
+  .night .streak, .night .b, .night .d, .night .e, .night .g { display: none; }
 }
 
 /* ---------- sections ---------- */

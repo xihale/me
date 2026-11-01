@@ -54,22 +54,17 @@ const SECTIONS = [
 
   <main id="top" class="home">
     <section class="hero">
-      <!-- 星轨:一条曲线,由下五个节点实测位置生成(initHeroRail) -->
+      <!-- 星轨:一条连贯的尾迹,穿过节点后沿左边落到画面底 -->
       <svg class="sky" aria-hidden="true">
         <defs>
           <linearGradient id="rail-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
-            <stop offset="0.35" stop-color="var(--accent)" stop-opacity="0.2"/>
-            <stop offset="1" stop-color="var(--accent)" stop-opacity="0.42"/>
+            <stop offset="0.2" stop-color="var(--accent)" stop-opacity="0.4"/>
+            <stop offset="1" stop-color="var(--accent)" stop-opacity="0.82"/>
           </linearGradient>
         </defs>
-        <path class="rail" fill="none" stroke="url(#rail-grad)" stroke-width="1"/>
-        <!-- 同一颗流星:长尾渐变 + 前端亮核,两条同速 dash 错相 -->
-        <g class="comet-g">
-          <path class="comet-glow" pathLength="1000"/>
-          <path class="comet-mid" pathLength="1000"/>
-          <path class="comet-core" pathLength="1000"/>
-        </g>
+        <path class="rail-glow" fill="none"/>
+        <path class="rail" fill="none" stroke="url(#rail-grad)"/>
       </svg>
       <div class="wrap">
         <div class="who">
@@ -128,6 +123,7 @@ const SECTIONS = [
         </nav>
       </div>
     </section>
+    <div class="rail-down" aria-hidden="true"></div>
 
     <div class="wrap">
       <section class="sec" id="collection">
@@ -302,6 +298,11 @@ const SECTIONS = [
   </main>
 
   <Footer current="home" />
+  <a class="rise" href="#top" aria-label="回到顶部">
+    <svg class="rise-mark" viewBox="0 0 16 16" aria-hidden="true">
+      <path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/>
+    </svg>
+  </a>
 
   <script>
     import { initCabinet, initHeroRail } from '../scripts/ui';
