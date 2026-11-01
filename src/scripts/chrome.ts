@@ -10,6 +10,17 @@ export function initChrome() {
   markBelow();
   addEventListener('scroll', markBelow, { passive: true });
 
+  // 左侧脊线随滚动向下生长,把「长卷推进」具象成一条线
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const grow = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? Math.min(1, scrollY / max) : 1;
+      document.documentElement.style.setProperty('--rail-grow', (0.12 + 0.88 * p).toFixed(3));
+    };
+    grow();
+    addEventListener('scroll', grow, { passive: true });
+  }
+
   const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.bar nav a')].filter((a) =>
     a.getAttribute('href')?.startsWith('#')
   );
