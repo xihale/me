@@ -5,8 +5,7 @@ export function initCabinet() {
   if (!root) return;
   const devs: Dev[] = JSON.parse(document.getElementById('dev-data')!.textContent || '[]');
   const i = document.getElementById('cap-i')!, n = document.getElementById('cap-n')!;
-  const step = document.getElementById('cap-step');
-  const gBars = [...root.querySelectorAll<HTMLElement>('.g-bar')];
+  const btns = [...root.querySelectorAll<HTMLButtonElement>('.dev-btn')];
   const els = [...root.querySelectorAll<SVGGElement>('.dev')];
   const scrollx = root.querySelector<HTMLElement>('.scrollx');
   const marks = [...root.querySelectorAll<HTMLElement>('.snap')];
@@ -23,8 +22,10 @@ export function initCabinet() {
     if (d) {
       i.textContent = `${String(idx + 1).padStart(2, '0')} · ${d.kind}`;
       n.textContent = d.name;
-      if (step) step.textContent = `${String(idx + 1).padStart(2, '0')} / 07`;
-      gBars.forEach((b, j) => b.classList.toggle('on', j === idx));
+      btns.forEach((b, j) => {
+        b.classList.toggle('on', j === idx);
+        b.setAttribute('aria-pressed', String(j === idx));
+      });
     }
   };
 
@@ -42,15 +43,16 @@ export function initCabinet() {
     });
   });
 
-  gBars.forEach((bar, idx) => {
-    bar.addEventListener('click', () => {
-      if (!scrollx || !marks[idx]) return;
+  btns.forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      if (!scrollx || !marks[idx]) { show(idx); return; }
       const m = marks[idx];
       const box = scrollx.getBoundingClientRect();
       scrollx.scrollTo({
         left: m.getBoundingClientRect().left - box.left + scrollx.scrollLeft - scrollx.clientWidth / 2,
         behavior: 'smooth',
       });
+      if (!narrow.matches) show(idx);
     });
   });
 
@@ -110,83 +112,108 @@ export function initCabinet() {
   setInterval(tick, 5000);
 }
 
-export function initProjects() {
-  const grid = document.getElementById('tiles');
-  if (!grid) return;
-  const tiles = [...grid.querySelectorAll<HTMLAnchorElement>('.tile')];
-  const chips = [...document.querySelectorAll<HTMLButtonElement>('.filter [data-cat]')];
-  chips.forEach((c) =>
-    c.addEventListener('click', () => {
-      const cat = c.dataset.cat!;
-      chips.forEach((x) => x.classList.toggle('on', x === c));
-      tiles.forEach((t) => t.classList.toggle('dim', cat !== '*' && t.dataset.cat !== cat));
-    })
-  );
+type Pt = { x: number; y: number };
+const f1 = (v: number) => v.toFixed(1);
 
-  // 没有封面的项目:用名字做种子画一张 Julia 集,只取 alpha 当 mask,颜色跟随主题
-  const frac = (seed: string) => {
-    let h = 2166136261;
-    for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
-    const SETS = [[-0.8, 0.156], [-0.4, 0.6], [0.285, 0.01], [-0.70176, -0.3842], [-0.835, -0.2321], [0.355, 0.355], [-0.7269, 0.1889]];
-    const [cx, cy] = SETS[(h >>> 0) % SETS.length];
-    const W = 256, H = 160, sc = 1.35, max = 32;
-    const cv = document.createElement('canvas');
-    cv.width = W; cv.height = H;
-    const px = cv.getContext('2d')!.createImageData(W, H);
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      let zx = (x / W - 0.5) * sc * 2 * (W / H), zy = (y / H - 0.5) * sc * 2, n = 0;
-      while (n < max && zx * zx + zy * zy < 4) { const nx = zx * zx - zy * zy + cx; zy = 2 * zx * zy + cy; zx = nx; n++; }
-      px.data[(y * W + x) * 4 + 3] = n === max ? 255 : Math.round((n / max) ** 0.6 * 210);
-    }
-    cv.getContext('2d')!.putImageData(px, 0, 0);
-    return cv.toDataURL();
-  };
-  tiles.forEach((t) => {
-    const c = t.querySelector<HTMLCanvasElement>('.frac');
-    if (!c) return;
-    const url = `url("${frac(t.dataset.name!)}")`;
-    c.style.maskImage = url;
-    c.style.setProperty('-webkit-mask-image', url);
-  });
-
-  const sheet = document.getElementById('sheet') as HTMLDialogElement | null;
-  const sImg = document.getElementById('sheet-img');
-  const sCat = document.getElementById('sheet-cat');
-  const sHost = document.getElementById('sheet-host');
-  const sName = document.getElementById('sheet-name');
-  const sDesc = document.getElementById('sheet-desc');
-  const sBtn = document.getElementById('sheet-btn') as HTMLAnchorElement | null;
-  const sClose = document.getElementById('sheet-close');
-  const fine = matchMedia('(hover: hover) and (min-width: 861px)');
-
-  if (sheet) {
-    sClose?.addEventListener('click', () => sheet.close());
-    if (!('closedBy' in HTMLDialogElement.prototype)) {
-      sheet.addEventListener('click', (event) => {
-        if (event.target !== sheet) return;
-        const rect = sheet.getBoundingClientRect();
-        const inContent =
-          rect.top <= event.clientY &&
-          event.clientY <= rect.top + rect.height &&
-          rect.left <= event.clientX &&
-          event.clientX <= rect.left + rect.width;
-        if (!inContent) sheet.close();
-      });
-    }
+/** Catmull-Rom 转三次贝塞尔:过每一个点,切线取邻点差,整条无折角 */
+function spline(p: Pt[]) {
+  let d = `M${f1(p[0].x)} ${f1(p[0].y)}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[i - 1] ?? p[i], b = p[i], c = p[i + 1], e = p[i + 2] ?? p[i + 1];
+    d += ` C${f1(b.x + (c.x - a.x) / 6)} ${f1(b.y + (c.y - a.y) / 6)} ${f1(c.x - (e.x - b.x) / 6)} ${f1(c.y - (e.y - b.y) / 6)} ${f1(c.x)} ${f1(c.y)}`;
   }
+  return d;
+}
 
-  tiles.forEach((t) => {
-    t.addEventListener('click', (ev) => {
-      if (fine.matches || !sheet) return;
-      ev.preventDefault();
-      const d = t.dataset;
-      if (sImg) sImg.innerHTML = d.img ? `<img src="${d.img}" alt="${d.name}" />` : `<b>${d.sym}</b>`;
-      if (sCat) sCat.textContent = d.cat || '';
-      if (sHost) sHost.textContent = d.host || '';
-      if (sName) sName.textContent = d.name || '';
-      if (sDesc) sDesc.textContent = d.desc || '';
-      if (sBtn) sBtn.href = t.href;
-      sheet.showModal();
+/** 星轨:穿过五枚节点的实测中心,两端沿同一条抛物线甩出画外;流星沿它自右上滑向左下 */
+export function initHeroRail() {
+  const hero = document.querySelector<HTMLElement>('.hero');
+  const svg = hero?.querySelector<SVGSVGElement>('.sky');
+  const rows = [...(hero?.querySelectorAll<HTMLAnchorElement>('.hero-fall .row') ?? [])];
+  if (!hero || !svg || rows.length < 3) return;
+
+  const rail = svg.querySelector<SVGPathElement>('.rail');
+  const group = svg.querySelector<SVGGElement>('.comet-g');
+  const glow = svg.querySelector<SVGPathElement>('.comet-glow');
+  const mid = svg.querySelector<SVGPathElement>('.comet-mid');
+  const core = svg.querySelector<SVGPathElement>('.comet-core');
+  if (!rail || !group || !glow || !mid || !core) return;
+  const paths = [...svg.querySelectorAll<SVGPathElement>('path')];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let frac: number[] = [];
+  const lit: boolean[] = [];
+
+  const draw = () => {
+    if (matchMedia('(max-width: 860px)').matches) return;
+    const hb = hero.getBoundingClientRect();
+    const nodes: Pt[] = rows.map((r) => {
+      const b = r.querySelector('.nd')!.getBoundingClientRect();
+      return { x: b.left + b.width / 2 - hb.left, y: b.top + b.height / 2 - hb.top };
     });
-  });
+    if (!hb.width || nodes.some((n) => !n.y)) return;
+
+    // x(y)=ay²+by+c 由首、中、末三点定形;两端顺它延到画面之外
+    const [n0, , n2, , n4] = nodes;
+    const h = n2.y - n0.y || 1;
+    const a = (n0.x - 2 * n2.x + n4.x) / (2 * h * h);
+    const b = (n2.x - n0.x - a * (n2.y ** 2 - n0.y ** 2)) / (n2.y - n0.y);
+    const at = (y: number) => a * y * y + b * y + n0.x - a * n0.y ** 2 - b * n0.y;
+    const yTop = n0.y - Math.max(260, hb.height * 0.45);
+    const yEnd = n4.y + Math.max(150, hb.height * 0.18);
+    const pts: Pt[] = [{ x: at(yTop), y: yTop }, ...nodes, { x: at(yEnd), y: yEnd }];
+
+    const d = spline(pts);
+    svg.setAttribute('viewBox', `0 0 ${Math.round(hb.width)} ${Math.round(hb.height)}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    for (const p of paths) p.setAttribute('d', d);
+
+    // 每个节点落在整条路径的哪个位置(0..1)
+    const L = rail.getTotalLength();
+    const N = 720;
+    const samples = Array.from({ length: N + 1 }, (_, i) => rail.getPointAtLength((L * i) / N));
+    frac = nodes.map((n) => {
+      let best = 0, bd = Infinity;
+      for (let i = 0; i < samples.length; i++) {
+        const dd = (samples[i].x - n.x) ** 2 + (samples[i].y - n.y) ** 2;
+        if (dd < bd) { bd = dd; best = i; }
+      }
+      return best / N;
+    });
+  };
+
+  draw();
+  addEventListener('resize', draw);
+  document.fonts?.ready.then(draw);
+  if (reduced) return;
+
+  // 流星:9s 一圈;头部经过某个节点时,把那一行点亮
+  const CYCLE = 9000, TRAVEL = 1016, OFF = 34, HEAD = 116;
+  const narrow = matchMedia('(max-width: 860px)');
+  let t0 = 0;
+  const tick = (now: number) => {
+    if (!t0) t0 = now;
+    if (narrow.matches) {
+      requestAnimationFrame(tick);
+      return;
+    }
+    const p = (((now - t0) % CYCLE) + CYCLE) % CYCLE / CYCLE;
+    const off = OFF - TRAVEL * p;
+    const off1 = `${off.toFixed(2)}`;
+    glow.style.strokeDashoffset = off1;
+    mid.style.strokeDashoffset = off1;
+    core.style.strokeDashoffset = `${(off - HEAD).toFixed(2)}`;
+    const fade = Math.max(0, Math.min((p - 0.03) / 0.13, (0.97 - p) / 0.09, 1));
+    group.style.opacity = fade.toFixed(3);
+    const head = (TRAVEL * p + HEAD) / 1000;
+    for (let i = 0; i < rows.length; i++) {
+      const on = frac.length > i && Math.abs(head - frac[i]) < 0.04;
+      if (on !== lit[i]) {
+        lit[i] = on;
+        rows[i].classList.toggle('lit', on);
+      }
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }

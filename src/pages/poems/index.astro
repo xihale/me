@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { asset } from '../../data/asset';
+import { poems } from '../../data/excerpts';
+
+const nav = [
+  { label: '首页', href: asset('') },
+  { label: '句子', href: asset('quotes') },
+];
+---
+<Base title="诗词 · xihale" description={`竖排诗词摘抄,共 ${poems.length} 首,自右向左读。`}>
+  <Header brandHref={asset('')} nav={nav} />
+
+  <main id="top">
+    <div class="wrap">
+      <section class="sec paged" id="all">
+        <div class="col wide">
+          <header class="head rv">
+            <span class="no mono">摘抄</span>
+            <h2>诗词</h2>
+            <p class="meta mono">共 {poems.length} 首 · 竖排,自右向左读</p>
+          </header>
+          <div class="body">
+            <div class="poems rv">
+            {poems.map((p) => (
+              <figure class="poem">
+                <div class="ptext">
+                  {p.lines.map((l) => <span class="pline">{l}</span>)}
+                </div>
+                <figcaption class="pby">
+                  <b>{p.title}</b>
+                  <i class="mono">{p.author}</i>
+                </figcaption>
+              </figure>
+            ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <Footer current="poems" />
+
+  <script>
+    import { initChrome } from '../../scripts/chrome';
+    initChrome();
+  </script>
+</Base>

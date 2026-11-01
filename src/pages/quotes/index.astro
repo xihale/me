@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { asset } from '../../data/asset';
+import { quotes } from '../../data/excerpts';
+
+const nav = [
+  { label: '首页', href: asset('') },
+  { label: '诗词', href: asset('poems') },
+];
+---
+<Base title="句子 · xihale" description={`读到的句子,共 ${quotes.length} 句。`}>
+  <Header brandHref={asset('')} nav={nav} />
+
+  <main id="top">
+    <div class="wrap">
+      <section class="sec paged" id="all">
+        <div class="col narrow">
+          <header class="head rv">
+            <span class="no mono">摘抄</span>
+            <h2>句子</h2>
+            <p class="meta mono">共 {quotes.length} 句</p>
+          </header>
+          <div class="body">
+            <ul class="quotes rv">
+            {quotes.map((q) => (
+              <li class="quote">
+                <p class="qtext">{q.text}</p>
+                <p class="qfrom mono">—— {q.from}</p>
+              </li>
+            ))}
+          </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <Footer current="quotes" />
+
+  <script>
+    import { initChrome } from '../../scripts/chrome';
+    initChrome();
+  </script>
+</Base>

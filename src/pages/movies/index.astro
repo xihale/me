@@ -25,12 +25,13 @@ const nav = [
   <main id="top">
     <div class="wrap">
       <section class="sec paged" id="all">
-        <div class="rail rv">
-          <span class="no mono">豆瓣</span>
-          <h2>电影</h2>
-          <p class="meta mono">共 {movies.length} 部<br />最近 {last.date}</p>
-        </div>
-        <div class="body">
+        <div class="col wide">
+          <header class="head rv">
+            <span class="no mono">豆瓣</span>
+            <h2>电影</h2>
+            <p class="meta mono">共 {movies.length} 部 · 最近 {last.date}</p>
+          </header>
+          <div class="body">
           {groups.map(([label, list]) => (
             <div class="group rv" id={`tier-${label}`}>
               <h3 class="sub">{label} <span class="mono dim">{list.length} 部</span></h3>
@@ -44,6 +45,7 @@ const nav = [
               </div>
             </div>
           ))}
+          </div>
         </div>
       </section>
     </div>

@@ -18,12 +18,6 @@ const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89],
     <div class="live" aria-live="polite">
       <div class="live-meta">
         <p class="mono dim" id="cap-i"></p>
-        <div class="meter mono dim" id="cap-meter" aria-hidden="true">
-          <span id="cap-step">01 / 07</span>
-          <span class="gauge">
-            {devices.map((_, idx) => <i class:list={['g-bar', { on: idx === 0 }]} data-idx={idx} />)}
-          </span>
-        </div>
       </div>
       <h3 id="cap-n"></h3>
     </div>
@@ -154,5 +148,12 @@ const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89],
       {cx.map((c, k) => <i class="snap" style={`left:${((c / 1168) * 100).toFixed(3)}%`} data-i={k} />)}
     </div>
   </div>
+  <nav class="devs mono" aria-label="设备索引">
+    {devices.map((d, k) => (
+      <button type="button" class="dev-btn" data-i={k} aria-pressed={k === 0}>
+        <span class="no" aria-hidden="true">{String(k + 1).padStart(2, '0')}</span>{d.kind}
+      </button>
+    ))}
+  </nav>
   <script type="application/json" id="dev-data" set:html={JSON.stringify(devices)} />
 </div>

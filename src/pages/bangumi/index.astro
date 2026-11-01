@@ -12,22 +12,24 @@ import { asset } from '../../data/asset';
     <div class="wrap">
       {shelves.map(([label, anchor, list]) => (
         <section class="sec paged" id={anchor}>
-          <div class="rail rv">
-            <span class="no mono">收藏</span>
-            <h2>{label}</h2>
-            <p class="meta mono">{list.length} 部</p>
-          </div>
-          <div class="body rv">
-            <div class:list={['rack', { square: anchor === 'albums' }]}>
-              {byScore(list).map((x) => (
-                <a class="fig" href={x.url} target="_blank" rel="noopener" title={x.title}>
-                  <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height={anchor === 'albums' ? '360' : '540'} />
-                  <span class="cap">
-                    <i>{x.score || '—'}</i>
-                    <b>{x.title}</b>
-                  </span>
-                </a>
-              ))}
+          <div class="col wide">
+            <header class="head rv">
+              <span class="no mono">收藏</span>
+              <h2>{label}</h2>
+              <p class="meta mono">{list.length} 部</p>
+            </header>
+            <div class="body rv">
+              <div class:list={['rack', { square: anchor === 'albums' }]}>
+                {byScore(list).map((x) => (
+                  <a class="fig" href={x.url} target="_blank" rel="noopener" title={x.title}>
+                    <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height={anchor === 'albums' ? '360' : '540'} />
+                    <span class="cap">
+                      <i>{x.score || '—'}</i>
+                      <b>{x.title}</b>
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </section>

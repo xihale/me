@@ -1,43 +1,10 @@
-const root = document.documentElement;
-const scheme = matchMedia('(prefers-color-scheme: dark)');
-const PREFS = ['auto', 'light', 'dark'] as const;
-type Pref = (typeof PREFS)[number];
-
-const LABELS: Record<Pref, string> = {
-  auto: '主题：跟随系统，点击切换为亮色',
-  light: '主题：亮色，点击切换为暗色',
-  dark: '主题：暗色，点击切换为跟随系统',
-};
-
-const syncTheme = () => {
-  const pref = root.dataset.pref;
-  const dark = pref === 'dark' || (pref !== 'light' && scheme.matches);
-  root.dataset.theme = dark ? 'dark' : 'light';
-};
-
-function initTheme() {
-  syncTheme();
-  scheme.addEventListener('change', syncTheme);
-  const btn = document.getElementById('theme');
-  if (!btn) return;
-  const label = () => {
-    const text = LABELS[(root.dataset.pref as Pref) || 'auto'];
-    btn.setAttribute('aria-label', text);
-    btn.title = text;
-  };
-  label();
-  btn.addEventListener('click', () => {
-    const cur = (root.dataset.pref as Pref) || 'auto';
-    const next = PREFS[(PREFS.indexOf(cur) + 1) % PREFS.length];
-    root.dataset.pref = next;
-    localStorage.setItem('theme', next);
-    syncTheme();
-    label();
-  });
-}
-
 export function initChrome() {
-  initTheme();
+  const bar = document.querySelector<HTMLElement>('.bar');
+  if (bar?.hasAttribute('data-idle')) {
+    const atTop = () => bar.classList.toggle('top', scrollY < innerHeight * 0.55);
+    atTop();
+    addEventListener('scroll', atTop, { passive: true });
+  }
 
   const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.bar nav a')].filter((a) =>
     a.getAttribute('href')?.startsWith('#')

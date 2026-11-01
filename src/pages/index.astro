@@ -3,29 +3,16 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cabinet from '../components/Cabinet.astro';
-import { groups, entries } from '../data/projects';
-import { anime, bgm, bgmUser } from '../data/status';
+import { anime, bgm, bgmUser, devices } from '../data/status';
 import { songs, songUrl, likedUrl } from '../data/music';
-import { asset, slug } from '../data/asset';
+import { asset } from '../data/asset';
 import { movies, douban, movieCover } from '../data/movies';
 import { shelves, byScore } from '../data/books';
-import fs from 'node:fs';
+import { feedGroups } from '../data/feeds';
+import { poems, quotes } from '../data/excerpts';
 
-const thumb = (url: string) => {
-  const f = `img/shots/${slug(url)}.webp`;
-  return fs.existsSync(`public/${f}`) ? asset(f) : '';
-};
 const cover = (id: number) => asset(`img/covers/${id}.webp`);
 
-const FEATURED = ['snirectAndroid', 'Syndi', 'Upix', 'EasyTier Android'];
-const tiles = entries.map((e) => ({
-  ...e,
-  img: thumb(e.url),
-  feat: FEATURED.includes(e.name),
-}));
-const hang = FEATURED.map((name) => tiles.find((t) => t.name === name)!);
-const plates = tiles.filter((t) => !t.feat);
-const total = tiles.length;
 const top = anime.filter((a) => a.score >= 9);
 const rest = anime.filter((a) => a.score < 9);
 const SHELF_MAX = 11;
@@ -39,144 +26,196 @@ const shelfGroups = [
   { label: '电影', href: asset('movies'), items: movieShelf, showScore: false },
   ...shelves.map(([label, anchor, items]) => ({ label, href: `${asset('bangumi')}#${anchor}`, items, showScore: true })),
 ];
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const listCount = movies.length + anime.length + shelves.reduce((n, [, , items]) => n + items.length, 0);
+const feedCount = feedGroups.reduce((n, g) => n + g.items.length, 0);
+// 展柜设备固定六件(见 Cabinet.astro)
+const SECTIONS = [
+  { id: 'collection', t: '展柜', en: 'SELECTED WORKS', n: '06' },
+  { id: 'list', t: '清单', en: 'CURATED LISTS', n: pad2(listCount) },
+  { id: 'music', t: '音乐', en: 'ROTATION & OST', n: pad2(songs.length) },
+  { id: 'feeds', t: '订阅', en: 'RSS & CHANNELS', n: pad2(feedCount) },
+  { id: 'excerpts', t: '摘抄', en: 'FRAGMENTS & QUOTES', n: pad2(poems.length + quotes.length) },
+];
 ---
-<Base title="xihale" description="xihale 的个人主页：项目、设备和清单。">
+<Base title="xihale" description="xihale 的收藏：设备、清单与订阅。">
   <Header
+    idle
     brandHref="#top"
     nav={[
-      { label: '关于', href: '#about' },
       { label: '展柜', href: '#collection' },
-      { label: '项目', href: '#projects' },
       { label: '清单', href: '#list' },
       { label: '音乐', href: '#music' },
+      { label: '订阅', href: '#feeds' },
+      { label: '摘抄', href: '#excerpts' },
     ]}
   />
 
-  <main id="top">
+  <main id="top" class="home">
     <section class="hero">
-      <canvas id="julia" aria-hidden="true"></canvas>
+      <!-- 星轨:一条曲线,由下五个节点实测位置生成(initHeroRail) -->
+      <svg class="sky" aria-hidden="true">
+        <defs>
+          <linearGradient id="rail-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
+            <stop offset="0.35" stop-color="var(--accent)" stop-opacity="0.2"/>
+            <stop offset="1" stop-color="var(--accent)" stop-opacity="0.42"/>
+          </linearGradient>
+        </defs>
+        <path class="rail" fill="none" stroke="url(#rail-grad)" stroke-width="1"/>
+        <!-- 同一颗流星:长尾渐变 + 前端亮核,两条同速 dash 错相 -->
+        <g class="comet-g">
+          <path class="comet-glow" pathLength="1000"/>
+          <path class="comet-mid" pathLength="1000"/>
+          <path class="comet-core" pathLength="1000"/>
+        </g>
+      </svg>
       <div class="wrap">
-        <h1><span><b>xihale</b></span></h1>
+        <div class="who">
+          <svg class="face" viewBox="56 68 288 332" aria-hidden="true">
+            <g class="halo" fill="none" stroke="currentColor" stroke-linecap="round">
+              <circle cx="200" cy="150" r="102" stroke-width="1" stroke-dasharray="3 7" opacity="0.5"/>
+              <circle cx="200" cy="150" r="138" stroke-width="1" stroke-dasharray="3 9" opacity="0.3"/>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M140 186 C128 130 160 92 200 92 C240 92 272 130 260 186"/>
+              <path d="M152 152 Q200 132 248 152" stroke-width="1.5"/>
+              <path d="M176 84 l-2 -8 M200 82 v-9 M224 84 l2 -8" stroke-width="1.5" stroke="var(--accent)" opacity="0.7"/>
+              <path d="M152 96 l-6 -6 M248 96 l6 -6" stroke-width="1.5"/>
+              <path d="M141 204 C142 252 168 292 200 297"/>
+              <path d="M259 204 C258 240 246 270 228 288"/>
+              <g stroke-width="3">
+                <rect x="148" y="192" width="46" height="38" rx="12"/>
+                <rect x="206" y="192" width="46" height="38" rx="12"/>
+                <path d="M194 203 Q200 199 206 203"/>
+                <path d="M148 201 L138 199 M252 201 L262 199"/>
+              </g>
+              <path d="M152 180 Q170 172 192 177 M208 177 Q230 172 248 180" stroke-width="2.5"/>
+              <path d="M164 213 Q171 217 178 213 M222 213 Q229 217 236 213" stroke-width="1.5"/>
+              <path d="M201 224 Q199 245 194 252 Q200 256 207 252" stroke-width="1.5"/>
+              <path d="M187 276 Q200 280 213 276" stroke-width="2"/>
+              <path d="M176 294 V322 M224 294 V322" stroke-width="1.5"/>
+              <path d="M176 322 L200 352 L224 322"/>
+              <path d="M176 322 L156 340 M224 322 L244 340" stroke-width="1.5"/>
+              <path d="M156 340 C110 348 78 366 60 400" stroke-width="1.5"/>
+              <path d="M244 340 C290 348 322 366 340 400" stroke-width="1.5"/>
+            </g>
+          </svg>
+          <div class="who-txt">
+            <p class="who-name">xihale</p>
+            <p class="who-tag">器物、声响与字句的切片</p>
+            <nav class="who-links mono" aria-label="站外链接">
+              <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
+              <a href="https://xihale.top" target="_blank" rel="noopener">Blog ↗</a>
+              <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
+              <a href="https://x.com/xihale" target="_blank" rel="noopener">X ↗</a>
+            </nav>
+          </div>
+        </div>
+        <nav class="hero-fall" aria-label="页面索引">
+          {SECTIONS.map((s, i) => (
+            <a
+              href={`#${s.id}`}
+              class="row"
+              style={`--i:${i}; --dx:${['43vw', '29vw', '17.5vw', '8.5vw', '2vw'][i]}`}
+            >
+              <span class="nd" aria-hidden="true"/>
+              <b>{s.t}</b>
+              <span class="en mono">{s.en}<i>{s.n}</i></span>
+            </a>
+          ))}
+        </nav>
       </div>
     </section>
 
     <div class="wrap">
-      <section class="sec" id="about">
-        <div class="rail rv"><span class="no mono">01</span><h2>关于</h2></div>
-        <div class="body">
-          <p class="lede rv">想法很多，简简单单。</p>
-          <p class="links mono rv">
-            <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
-            <a href="https://xihale.top" target="_blank" rel="noopener">Blog ↗</a>
-            <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
-            <a href="https://x.com/xihale" target="_blank" rel="noopener">X ↗</a>
-          </p>
-        </div>
-      </section>
-
       <section class="sec" id="collection">
-        <div class="rail rv"><span class="no mono">02</span><h2>展柜</h2></div>
-        <div class="body rv"><Cabinet /></div>
-      </section>
-
-      <section class="sec" id="projects">
-        <div class="rail rv">
-          <span class="no mono">03</span><h2>项目</h2>
-          <ul class="filter">
-            <li><button class="on mono" data-cat="*" type="button"><span>全部</span><i>{total}</i></button></li>
-            {groups.map((g) => <li><button class="mono" data-cat={g.title} type="button"><span>{g.title}</span><i>{g.items.length}</i></button></li>)}
-          </ul>
-          <a class="all mono" href={asset('projects')}>详情 →</a>
-        </div>
-        <div class="body rv">
-          <div id="tiles">
-            <div class="hang">
-              {hang.map((t) => (
-                <a class="tile feat" href={t.url} target="_blank" rel="noopener"
-                  data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
-                  <span class="cv">
-                    {t.img ? <img src={t.img} alt="" loading="lazy" decoding="async" /> : <canvas class="frac" aria-hidden="true"></canvas>}
-                  </span>
-                  <span class="cap">
-                    <b class="nm">{t.name}</b>
-                    <span class="ds">{t.desc}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-            <div class="plates">
-              {plates.map((t) => (
-                <a class="tile" href={t.url} target="_blank" rel="noopener"
-                  data-cat={t.cat} data-name={t.name} data-desc={t.desc} data-host={t.host} data-img={t.img} data-sym={t.sym}>
-                  <span class="cv">
-                    {t.img ? <img src={t.img} alt="" loading="lazy" decoding="async" /> : <canvas class="frac" aria-hidden="true"></canvas>}
-                  </span>
-                  <span class="cap"><b class="nm">{t.name}</b></span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
+        <header class="head rv">
+          <span class="no mono">01 / 05</span>
+          <h2>展柜</h2>
+          <span class="en mono">SELECTED WORKS</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="meta mono">{devices.length} 件</span>
+        </header>
+        <div class="rv"><Cabinet /></div>
       </section>
 
       <section class="sec" id="list">
-        <div class="rail rv"><span class="no mono">04</span><h2>清单</h2></div>
-        <div class="body">
-          <div class="block rv">
+        <header class="head rv">
+          <span class="no mono">02 / 05</span>
+          <h2>清单</h2>
+          <span class="en mono">CURATED LISTS</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="meta mono">{listCount} 条</span>
+        </header>
+        <div class="block rv">
+          <div class="ghead">
             <h3 class="sub">番</h3>
-            <div class="wall-top">
-              {top.map((a) => (
-                <a class="fig" href={bgm(a.id)} target="_blank" rel="noopener">
-                  <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
-                  <span class="cap"><b>{a.title}</b></span>
-                </a>
-              ))}
-            </div>
-            <div class="wall">
-              {rest.map((a) => (
-                <a class="poster" href={bgm(a.id)} target="_blank" rel="noopener" title={`${a.title} · ${a.score} 分`}>
-                  <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
-                  <span class="tip">{a.title}</span>
-                </a>
-              ))}
-              <a class="poster more" href={bgmUser} target="_blank" rel="noopener">
-                <span>更多</span>
+            <span class="rule" aria-hidden="true"></span>
+            <span class="meta mono">{anime.length} 部</span>
+          </div>
+          <div class="wall-top">
+            {top.map((a) => (
+              <a class="fig" href={bgm(a.id)} target="_blank" rel="noopener">
+                <img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" />
+                <span class="cap"><i class="mono">{a.score}</i><b>{a.title}</b></span>
               </a>
-            </div>
+            ))}
           </div>
+          <div class="wall">
+            {rest.map((a) => (
+              <a class="card" href={bgm(a.id)} target="_blank" rel="noopener">
+                <span class="pimg"><img src={cover(a.id)} alt={a.title} loading="lazy" decoding="async" width="360" height="540" /></span>
+                <span class="pcap">{a.title}</span>
+              </a>
+            ))}
+            <a class="card more" href={bgmUser} target="_blank" rel="noopener">
+              <span>更多</span>
+            </a>
+          </div>
+        </div>
 
-          <div class="block rv shelf">
-            {shelfGroups.map(({ label, href, items, showScore }) => {
-              const sorted = byScore(items);
-              const shown = sorted.slice(0, SHELF_MAX);
-              return (
-                <div>
+        <div class="block rv shelf">
+          {shelfGroups.map(({ label, href, items, showScore }) => {
+            const sorted = byScore(items);
+            const shown = sorted.slice(0, SHELF_MAX);
+            return (
+              <div>
+                <div class="ghead">
                   <h3 class="sub">{label}</h3>
-                  <div class="wall small">
-                    {shown.map((x) => (
-                      <a class="poster" href={x.url} target="_blank" rel="noopener" title={showScore && x.score ? `${x.title} · ${x.score} 分` : x.title}>
-                        <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
-                        {showScore && x.score > 0 && <span class="score">{x.score}</span>}
-                        <span class="tip">{x.title}</span>
-                      </a>
-                    ))}
-                    {sorted.length > SHELF_MAX && (
-                      <a class="poster more" href={href}>
-                        <span>更多</span>
-                      </a>
-                    )}
-                  </div>
+                  <span class="rule" aria-hidden="true"></span>
+                  <span class="meta mono">{items.length}</span>
                 </div>
-              );
-            })}
-          </div>
+                <div class="wall small">
+                  {shown.map((x) => (
+                    <a class="poster" href={x.url} target="_blank" rel="noopener" title={showScore && x.score ? `${x.title} · ${x.score} 分` : x.title}>
+                      <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height="540" />
+                      {showScore && x.score > 0 && <span class="score">{x.score}</span>}
+                      <span class="tip">{x.title}</span>
+                    </a>
+                  ))}
+                  {sorted.length > SHELF_MAX && (
+                    <a class="poster more" href={href}>
+                      <span>更多</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       <section class="sec" id="music">
-        <div class="rail rv"><span class="no mono">05</span><h2>音乐</h2></div>
-        <div class="body rv">
-          <div class="tracks">
+        <header class="head rv">
+          <span class="no mono">03 / 05</span>
+          <h2>音乐</h2>
+          <span class="en mono">ROTATION &amp; OST</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="meta mono">{songs.length} 首</span>
+        </header>
+        <div class="tracks rv">
             {songs.map((x) => (
               <a class="track" href={songUrl(x.id)} target="_blank" rel="noopener">
                 <img src={asset(`img/music/${x.id}.webp`)} alt={`${x.title} · ${x.artist}`} loading="lazy" decoding="async" width="400" height="400" />
@@ -186,7 +225,77 @@ const shelfGroups = [
             <a class="track more" href={likedUrl} target="_blank" rel="noopener">
               <span class="t"><b>我喜欢的音乐</b><i>网易云歌单 ↗</i></span>
             </a>
+        </div>
+      </section>
+
+      <section class="sec" id="feeds">
+        <header class="head rv">
+          <span class="no mono">04 / 05</span>
+          <h2>订阅</h2>
+          <span class="en mono">RSS &amp; CHANNELS</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="meta mono">{feedGroups.length > 1 ? `${feedGroups.length} 组 ${feedCount} 条` : `博客 × ${feedCount}`}</span>
+        </header>
+        {feedGroups.map((grp) => (
+          <div class="pgroup rv">
+            {feedGroups.length > 1 && <h3 class="gname mono">{grp.title}</h3>}
+            <ul class="plist-lite">
+              {grp.items.map((x, k) => (
+                <li>
+                  <a class="row" href={x.url} target="_blank" rel="noopener">
+                    <span class="rno mono" aria-hidden="true">{pad2(k + 1)}</span>
+                    <span class="rname">{x.name}</span>
+                    <span class="rdesc">{x.desc}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
+        ))}
+      </section>
+
+      <section class="sec" id="excerpts">
+        <header class="head rv">
+          <span class="no mono">05 / 05</span>
+          <h2>摘抄</h2>
+          <span class="en mono">FRAGMENTS &amp; QUOTES</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="meta mono">{poems.length + quotes.length} 则</span>
+        </header>
+        <div class="pgroup rv">
+          <div class="ghead">
+            <h3 class="sub">诗词</h3>
+            <span class="rule" aria-hidden="true"></span>
+            <a class="all mono" href={asset('poems')}>更多 ↗</a>
+          </div>
+          <div class="poems">
+            {poems.map((p) => (
+              <figure class="poem">
+                <div class="ptext">
+                  {p.lines.map((l) => <span class="pline">{l}</span>)}
+                </div>
+                <figcaption class="pby">
+                  <b>{p.title}</b>
+                  <i class="mono">{p.author}</i>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+        <div class="pgroup rv">
+          <div class="ghead">
+            <h3 class="sub">句子</h3>
+            <span class="rule" aria-hidden="true"></span>
+            <a class="all mono" href={asset('quotes')}>更多 ↗</a>
+          </div>
+          <ul class="quotes">
+            {quotes.map((q) => (
+              <li class="quote">
+                <p class="qtext">{q.text}</p>
+                <p class="qfrom mono">—— {q.from}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </div>
@@ -194,35 +303,12 @@ const shelfGroups = [
 
   <Footer current="home" />
 
-
-
-  <dialog id="sheet" class="sheet" closedby="any" aria-label="项目详情">
-    <div class="sheet-box">
-      <div class="sheet-handle" aria-hidden="true"></div>
-      <button class="sheet-close" id="sheet-close" type="button" aria-label="关闭详情">✕</button>
-      <div class="sheet-media">
-        <div class="sheet-img" id="sheet-img"></div>
-      </div>
-      <div class="sheet-body">
-        <div class="sheet-meta mono">
-          <span class="sheet-cat mono dim" id="sheet-cat"></span>
-          <span class="sheet-host mono" id="sheet-host"></span>
-        </div>
-        <h3 class="sheet-name" id="sheet-name"></h3>
-        <p class="sheet-desc" id="sheet-desc"></p>
-        <a class="sheet-btn mono" id="sheet-btn" href="#" target="_blank" rel="noopener">访问项目 ↗</a>
-      </div>
-    </div>
-  </dialog>
-
   <script>
-    import { initJulia } from '../scripts/julia';
-    import { initCabinet, initProjects } from '../scripts/ui';
+    import { initCabinet, initHeroRail } from '../scripts/ui';
     import { initChrome } from '../scripts/chrome';
 
-    initJulia(document.getElementById('julia') as HTMLCanvasElement);
     initCabinet();
-    initProjects();
+    initHeroRail();
     initChrome();
   </script>
 </Base>
