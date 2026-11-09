@@ -59,18 +59,27 @@ const SECTIONS = [
         <path class="rail-glow" fill="none"/>
         <path class="rail" fill="none" stroke="url(#rail-grad)"/>
       </svg>
+      <!-- 左上空白域流星雨:平行短流星自右上入场,向左下坠落、域内消散 -->
+      <div class="shower" aria-hidden="true">
+        <i style="--l:82%; --w:64px; --fy:400px; --o:.7; --d:3.2s; --dl:0s"></i>
+        <i style="--l:58%; --w:44px; --fy:340px; --o:.55; --d:3.9s; --dl:1.1s"></i>
+        <i style="--l:92%; --w:76px; --fy:420px; --o:.75; --d:2.9s; --dl:2.2s"></i>
+        <i style="--l:38%; --w:36px; --fy:300px; --o:.5; --d:4.4s; --dl:3s"></i>
+        <i style="--l:70%; --w:56px; --fy:380px; --o:.65; --d:3.5s; --dl:3.9s"></i>
+        <i style="--l:86%; --w:46px; --fy:360px; --o:.6; --d:4.1s; --dl:5s"></i>
+        <i style="--l:50%; --w:34px; --fy:320px; --o:.45; --d:4.7s; --dl:6s"></i>
+        <i style="--l:76%; --w:58px; --fy:400px; --o:.65; --d:3.3s; --dl:6.8s"></i>
+        <i style="--l:95%; --w:38px; --fy:350px; --o:.52; --d:5.2s; --dl:7.6s"></i>
+        <i style="--l:64%; --w:40px; --fy:360px; --o:.5; --d:3.7s; --dl:1.8s"></i>
+        <i style="--l:90%; --w:48px; --fy:390px; --o:.58; --d:3.1s; --dl:4.6s"></i>
+        <i style="--l:44%; --w:32px; --fy:310px; --o:.44; --d:4.2s; --dl:5.7s"></i>
+      </div>
       <div class="wrap">
         <div class="who">
           <svg class="face" viewBox="56 68 288 332" aria-hidden="true">
-            <g class="halo" fill="none" stroke="currentColor" stroke-linecap="round">
-              <circle cx="200" cy="150" r="102" stroke-width="1" stroke-dasharray="3 7" opacity="0.5"/>
-              <circle cx="200" cy="150" r="138" stroke-width="1" stroke-dasharray="3 9" opacity="0.3"/>
-            </g>
             <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M140 186 C128 130 160 92 200 92 C240 92 272 130 260 186"/>
               <path d="M152 152 Q200 132 248 152" stroke-width="1.5"/>
-              <path d="M176 84 l-2 -8 M200 82 v-9 M224 84 l2 -8" stroke-width="1.5" stroke="var(--accent)" opacity="0.7"/>
-              <path d="M152 96 l-6 -6 M248 96 l6 -6" stroke-width="1.5"/>
               <path d="M141 204 C142 252 168 292 200 297"/>
               <path d="M259 204 C258 240 246 270 228 288"/>
               <g stroke-width="3">
@@ -94,10 +103,10 @@ const SECTIONS = [
             <p class="who-name">xihale</p>
             <p class="who-tag">器物、声响与字句的切片</p>
             <nav class="who-links mono" aria-label="站外链接">
-              <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub ↗</a>
-              <a href="https://xihale.top" target="_blank" rel="noopener">Blog ↗</a>
-              <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi ↗</a>
-              <a href="https://x.com/xihale" target="_blank" rel="noopener">X ↗</a>
+              <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub</a>
+              <a href="https://xihale.top" target="_blank" rel="noopener">Blog</a>
+              <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi</a>
+              <a href="https://x.com/xihale" target="_blank" rel="noopener">X</a>
             </nav>
           </div>
         </div>
@@ -278,17 +287,18 @@ const SECTIONS = [
 
   <Footer current="home" />
   <a class="rise" href="#top" aria-label="回到顶部">
-    <svg class="rise-mark" viewBox="0 0 16 16" aria-hidden="true">
-      <path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/>
-    </svg>
+    <span class="rise-star" aria-hidden="true">
+      <svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/></svg>
+    </span>
   </a>
 
   <script>
-    import { initCabinet, initHeroRail } from '../scripts/ui';
+    import { initCabinet, initHeroRail, initRise } from '../scripts/ui';
     import { initChrome } from '../scripts/chrome';
 
     initCabinet();
     initHeroRail();
     initChrome();
+    initRise();
   </script>
 </Base>

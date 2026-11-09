@@ -122,6 +122,11 @@ a:focus-visible {
   display: flex; flex-wrap: wrap; justify-content: flex-end;
   gap: 0.55rem 1.4rem; margin-top: 1.2rem; color: var(--muted); font-size: 0.875rem;
 }
+/* 站外链接:无下划线,悬停文字转亮 */
+.who-links a {
+  transition: color 0.2s ease;
+}
+.who-links a:is(:hover, :focus-visible) { color: var(--ink); }
 
 /* ---------- 索引:自右上向左下铺开,词落在星轨经过的地方 ---------- */
 .hero-fall { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: clamp(1.4rem, 5.4vh, 3rem); }
@@ -133,13 +138,34 @@ a:focus-visible {
   animation-delay: calc(0.28s + var(--i, 0) * 0.09s);
 }
 @keyframes fallUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-/* 悬停/键盘聚焦:只画一条从左展开的细线,不出现方框 */
-.hero-fall .row::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
-  background: var(--accent); transform: scaleX(0); transform-origin: 0 50%;
-  transition: transform 0.6s cubic-bezier(0.16, 0.8, 0.2, 1);
+/* 悬停/键盘聚焦:标题两旁各亮一颗小星,轻轻闪;不画下划线 */
+.hero-fall b { position: relative; }
+.hero-fall b::before,
+.hero-fall b::after {
+  content: ''; position: absolute; top: -0.1em;
+  width: 0.26em; height: 0.26em;
+  background: var(--accent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0; transform: scale(0.2);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.85, 0.3, 1.35);
+  pointer-events: none;
 }
-.hero-fall .row:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+.hero-fall b::before { left: -0.34em; }
+.hero-fall b::after { right: -0.34em; }
+.hero-fall .row:is(:hover, :focus-visible) b::before,
+.hero-fall .row:is(:hover, :focus-visible) b::after {
+  opacity: 1; transform: scale(1);
+  animation: twinkle 1.5s ease-in-out infinite;
+}
+.hero-fall .row:is(:hover, :focus-visible) b::before { animation-delay: 0.3s; }
+.hero-fall .row:is(:hover, :focus-visible) b::after { animation-delay: 0.72s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.68); }
+}
+/* 起飞后词已化星,两旁的小星不许残留 */
+.hero-fall .row.depart b::before,
+.hero-fall .row.depart b::after { opacity: 0; animation: none; }
 .hero-fall .row:focus-visible { outline: none; text-decoration: none; }
 .hero-fall .row:focus-visible b { color: var(--accent); }
 .hero-fall .row:focus-visible .nd { opacity: 1; box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent) 42%, transparent); }
@@ -207,10 +233,14 @@ html.js .rv.in { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
   .who { animation: none; opacity: 1; transform: none; }
   .sky { animation: none; }
-  .night .shoot { animation: none; opacity: 0; }
+  .night .shoot, .night .shoot2, .night .shoot3, .night .shoot4, .night .shoot5 { animation: none; opacity: 0; }
+  .shower i { animation: none; opacity: 0; }
   .rise-mark, .hero-fall .row.depart b, .hero-fall .row.depart .en, .hero-fall .nd { transition: none; }
   .hero-fall .row { animation: none; opacity: 1; transform: none; }
   .hero-fall b, .hero-fall .en, .hero-fall .nd { transition: none; }
+  .hero-fall b::before, .hero-fall b::after { transition: none; animation: none; }
+  h2.star-hit::before, h2.star-hit::after { animation: none; opacity: 0; }
+  .rise-star { transition: none; animation: none; }
   .rv, html.js .rv { opacity: 1; transform: none; transition: none; }
   .rail-down { transform: none; }
   .cabinet .ty { animation: none !important; width: 260px !important; }
@@ -221,28 +251,60 @@ html.js .rv.in { opacity: 1; transform: none; }
 }
 
 .fly-star {
-  position: fixed; left: 0; top: 0; z-index: 40;
+  position: absolute; left: 0; top: 0; z-index: 40;
   width: 15px; height: 15px; color: var(--accent);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
   pointer-events: none;
+}
+.fly-star svg { display: block; width: 100%; height: 100%; }
+/* 到站:标题两旁绽出小星(与 hero hover 同款),一次性扩展后消散 */
+.home .sec > .head h2 { position: relative; }
+h2.star-hit::before,
+h2.star-hit::after {
+  content: ''; position: absolute; top: 50%;
+  width: 0.32em; height: 0.32em; background: var(--accent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  pointer-events: none;
+  animation: h2bloom 0.9s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+h2.star-hit::before { left: -0.55em; }
+h2.star-hit::after { right: -0.55em; animation-delay: 0.1s; }
+@keyframes h2bloom {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.2); }
+  30% { opacity: 1; transform: translateY(-50%) scale(1.05); }
+  55% { opacity: 1; transform: translateY(-50%) scale(1); }
+  100% { opacity: 0; transform: translateY(-50%) scale(1.9); }
 }
 main, footer { position: relative; z-index: 1; }
 
-/* 往下之后,左边尾迹还在;悬停才显出回顶的星 */
+/* 脊线全程可悬停:贴线的窄带,星星在光标高度亮起,点击顺线回顶 */
 .rise {
-  position: fixed; z-index: 15; bottom: 0;
-  left: calc(var(--rail-x, 18px) - 16px);
-  width: 36px; height: 46vh;
+  position: fixed; z-index: 15; top: 0; bottom: 0;
+  left: calc(var(--rail-x, -40px) - 28px);
+  width: 56px;
   color: var(--accent); pointer-events: none;
 }
 .rise:focus-visible { outline: none; text-decoration: none; }
-body.below .rise { pointer-events: auto; }
+@media (hover: hover) and (pointer: fine) {
+  .rise { pointer-events: auto; }
+}
+/* 触屏与窄屏:回顶星是悬停交互,整条不参与,杜绝任何残留渲染 */
+@media (max-width: 860px), (hover: none) {
+  .rise { display: none; }
+}
 .rail-down {
   position: absolute; z-index: 2; pointer-events: none;
-  left: var(--rail-x, -40px); top: var(--hero-h, 100vh); bottom: 0; width: 1px;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 72%, transparent), color-mix(in srgb, var(--accent) 34%, transparent));
-  /* 脊线随滚动向下生长,是贯穿全页的主轴;章节注脚线退居次级 */
-  transform: scaleY(var(--rail-grow, 1));
+  left: var(--rail-x, -40px); top: calc(var(--hero-h, 100vh) - 1px); bottom: 0; width: 1.25px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 82%, transparent), color-mix(in srgb, var(--accent) 30%, transparent));
+  /* 脊线随滚动向下生长,是贯穿全页的主轴;盒中心对齐 SVG 描边中心(变量是线中心),消掉交界错位 */
+  transform: translateX(-50%) scaleY(var(--rail-grow, 1));
   transform-origin: top;
+}
+/* 弯轨落点的站台星:流星线在这里交棒给脊线 */
+.rail-down::before {
+  content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+  width: 7px; height: 7px; background: var(--accent); opacity: 0.6;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
 }
 @media (max-width: 860px) {
   .rail-down {
@@ -251,15 +313,56 @@ body.below .rise { pointer-events: auto; }
     opacity: 0.55;
     transform: none;
   }
-  .rise { height: 38vh; }
 }
-.rise-mark {
-  position: absolute; left: 9px; bottom: 0.9rem;
-  width: 13px; height: 13px; opacity: 0;
-  transform: scale(0.86);
-  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.16, 0.8, 0.2, 1);
+/* 脊线上的回顶星:悬停时光标高度亮起一颗带向上尾迹的星,点击顺线飞回顶部 */
+.rise-star {
+  position: absolute; left: 0; top: 0;
+  width: 20px; height: 20px; color: var(--accent);
+  opacity: 0; pointer-events: none;
+  transform: translate(28px, var(--ry, 60vh)) translate(-50%, -50%);
+  transition: opacity 0.22s ease;
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 75%, transparent));
 }
-.rise:is(:hover, :focus-visible) .rise-mark { opacity: 1; transform: scale(1); }
+.rise-star svg { display: block; width: 100%; height: 100%; }
+.rise-star::before {
+  content: ''; position: absolute; left: 50%; bottom: 98%;
+  width: 1.5px; height: 26px; transform: translateX(-50%);
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent) 90%, transparent), transparent);
+}
+.rise-star::after {
+  content: ''; position: absolute; left: 50%; bottom: 96%;
+  width: 8px; height: 9px; transform: translateX(-50%);
+  background: var(--accent); opacity: 0.9;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.rise:is(:hover, :focus-visible) .rise-star { opacity: 0; }
+/* 光标悬在真实脊线段(滚过 hero 之后)上,星才亮起;hero 区域无线,不出现 */
+.rise.on-rail:is(:hover, :focus-visible) .rise-star { opacity: 1; animation: risebob 1.3s ease-in-out infinite; }
+@keyframes risebob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+
+/* hero 左上空白域:流星自域顶入场,向左下坠、在域内自然消散,不越曲线 */
+.shower {
+  position: absolute; z-index: 0; left: 0; top: 6vh;
+  width: min(52vw, 860px); height: min(46vh, 450px);
+  overflow: hidden; pointer-events: none;
+}
+.shower i {
+  position: absolute; top: -16px; left: var(--l, 60%);
+  width: var(--w, 32px); height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 55%, transparent));
+  opacity: 0;
+  animation: showerfall var(--d, 4s) linear var(--dl, 0s) infinite;
+}
+@keyframes showerfall {
+  0% { transform: translate3d(0, 0, 0) rotate(-38deg); opacity: 0; }
+  7% { opacity: var(--o, 0.45); }
+  82% { opacity: var(--o, 0.45); }
+  100% { transform: translate3d(calc(var(--fy, 560px) * -1.27), var(--fy, 560px), 0) rotate(-38deg); opacity: 0; }
+}
+@media (max-width: 860px) {
+  .shower { display: none; }
+}
 
 /* 页边几颗静止的星,和一道偶尔划过的短迹 */
 .night {
@@ -278,6 +381,12 @@ body.below .rise { pointer-events: auto; }
 .night .e { top: 28%; right: 8%; --s: 2px; --o: 0.16; }
 .night .f { top: 72%; right: 6.5%; --s: 3px; --o: 0.28; }
 .night .g { bottom: 11%; right: 2.4%; --s: 2px; --o: 0.18; }
+.night .h { top: 13.5%; left: 6.4%; --s: 3px; --o: 0.36; background: var(--accent); }
+.night .i { top: 11%; right: 21%; --s: 2px; --o: 0.2; }
+.night .j { top: 47%; left: 8.6%; --s: 2px; --o: 0.16; }
+.night .k { top: 56%; right: 13.5%; --s: 3px; --o: 0.26; background: var(--accent); }
+.night .l { bottom: 23%; left: 6.2%; --s: 2px; --o: 0.22; }
+.night .m { bottom: 5.5%; left: 37%; --s: 2px; --o: 0.14; }
 .night .streak {
   position: absolute; width: var(--w, 52px); height: 1px;
   background: linear-gradient(90deg, var(--accent), transparent);
@@ -285,24 +394,60 @@ body.below .rise { pointer-events: auto; }
 }
 .night .s { top: 22%; right: 2.4%; --w: 68px; --r: -34deg; }
 .night .t { top: 58%; left: 1.2%; --w: 46px; --r: 42deg; opacity: 0.28; }
-.night .shoot {
-  top: 14%; right: 0; --w: 84px;
-  animation: shoot 18s ease-in-out infinite;
-}
+/* 左上角两道静态流星线,一长一短错开 */
+.night .u { top: 10.5%; left: 2.2%; --w: 66px; --r: -34deg; opacity: 0.42; }
+.night .v { top: 8.8%; left: 11.2%; --w: 36px; --r: -24deg; opacity: 0.24; }
+.night .w { bottom: 14%; right: 9%; --w: 54px; --r: -30deg; opacity: 0.3; }
+.night .x { top: 40%; right: 16%; --w: 34px; --r: -20deg; opacity: 0.2; }
+.night .y { top: 33%; left: 5.5%; --w: 40px; --r: -26deg; opacity: 0.22; }
+.night .z { bottom: 30%; right: 3%; --w: 44px; --r: -36deg; opacity: 0.26; }
+.night .aa { top: 74%; left: 12%; --w: 30px; --r: -18deg; opacity: 0.16; }
+/* 五道流星,周期与相位全错开:右上、左上反角、右下短促、左中、顶部缓行 */
+.night .shoot { top: 14%; right: 0; --w: 84px; animation: shoot 18s ease-in-out infinite; }
+.night .shoot2 { top: 26%; left: 0; --w: 62px; animation: shoot2 23s ease-in-out 7s infinite; }
+.night .shoot3 { top: 66%; right: 4%; --w: 48px; animation: shoot3 27s ease-in-out 14s infinite; }
+.night .shoot4 { top: 44%; left: 0; --w: 56px; animation: shoot4 21s ease-in-out 3s infinite; }
+.night .shoot5 { top: 6%; right: 30%; --w: 70px; animation: shoot5 31s ease-in-out 19s infinite; }
 @keyframes shoot {
   0%, 64% { transform: translate3d(24px, -12px, 0) rotate(-32deg); opacity: 0; }
   72% { opacity: 0.5; }
   88% { transform: translate3d(-7vw, 9vh, 0) rotate(-32deg); opacity: 0; }
   100% { opacity: 0; }
 }
+@keyframes shoot2 {
+  0%, 64% { transform: translate3d(-22px, -10px, 0) rotate(-150deg); opacity: 0; }
+  72% { opacity: 0.4; }
+  88% { transform: translate3d(7vw, 9vh, 0) rotate(-150deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes shoot3 {
+  0%, 66% { transform: translate3d(18px, -8px, 0) rotate(-26deg); opacity: 0; }
+  73% { opacity: 0.32; }
+  86% { transform: translate3d(-6vw, 7vh, 0) rotate(-26deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes shoot4 {
+  0%, 64% { transform: translate3d(-20px, -9px, 0) rotate(-38deg); opacity: 0; }
+  72% { opacity: 0.36; }
+  87% { transform: translate3d(6vw, 7vh, 0) rotate(-38deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes shoot5 {
+  0%, 66% { transform: translate3d(22px, -10px, 0) rotate(-22deg); opacity: 0; }
+  74% { opacity: 0.44; }
+  88% { transform: translate3d(-8vw, 10vh, 0) rotate(-22deg); opacity: 0; }
+  100% { opacity: 0; }
+}
 @media (max-width: 860px) {
-  .night .streak, .night .b, .night .d, .night .e, .night .g { display: none; }
+  .night .streak.s, .night .streak.t, .night .streak.v, .night .streak.w, .night .streak.x,
+  .night .streak.y, .night .streak.z, .night .streak.aa, .night .streak.shoot3, .night .streak.shoot5,
+  .night .b, .night .d, .night .e, .night .g, .night .i, .night .l, .night .m { display: none; }
 }
 
 /* ---------- sections ---------- */
 .sec { padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(4rem, 10vw, 8rem); }
 
-/* 首页:非对称双栏。左栏是章节注脚(编号/题名/计数,sticky,左缘细线呼应星轨脊线),右栏是内容画布 */
+/* 首页:非对称双栏。左栏是章节注脚(编号/题名/计数,sticky,经挂线悬于脊线上),右栏是内容画布 */
 .home .sec {
   display: grid;
   grid-template-columns: minmax(7.5rem, 20fr) minmax(0, 62fr);
@@ -318,17 +463,35 @@ body.below .rise { pointer-events: auto; }
   align-items: flex-start;
   gap: 0.55rem;
   margin: 0;
-  padding-left: 1.1rem;
-  border-left: 1px solid var(--line);
 }
 .home .sec > .head .rule { display: none; }
+/* 标题挂在线上:水平引线自脊线节点引到标题 */
+.home .sec > .head::before {
+  content: ''; position: absolute;
+  left: calc(-1 * var(--hang-w, 24px) + 7px);
+  top: var(--hang-y, 55%);
+  width: calc(var(--hang-w, 24px) - 13px);
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+.home .sec > .head::after {
+  content: ''; position: absolute;
+  left: calc(-1 * var(--hang-w, 24px));
+  top: var(--hang-y, 55%);
+  width: 7px; height: 7px;
+  transform: translate(-50%, -50%);
+  background: var(--accent); opacity: 0.55;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+@media (max-width: 860px) {
+  .home .sec > .head::before, .home .sec > .head::after { content: none; }
+}
 .home .sec > .head h2 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); letter-spacing: 0.06em; }
 @media (max-width: 860px) {
   .home .sec { display: block; }
   .home .sec > .head {
     position: static;
     flex-direction: row;
-    border-left: none;
     padding-left: 0;
     margin-bottom: clamp(1.4rem, 4vw, 2rem);
   }
@@ -349,13 +512,22 @@ body.below .rise { pointer-events: auto; }
 .ghead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-bottom: 1.1rem; }
 .ghead .sub { margin: 0; padding: 0; border: none; }
 .ghead .rule { flex: 1 1 3rem; min-width: 2rem; height: 1px; align-self: center; background: var(--line); }
+/* 规格线末端缀一颗小星,和制图标注一个语气 */
+.head .rule::after,
+.ghead .rule::after {
+  content: ''; position: absolute; right: -2px; top: 50%;
+  width: 5px; height: 5px; transform: translateY(-50%);
+  background: var(--accent); opacity: 0.5;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+.head .rule, .ghead .rule { position: relative; }
 .ghead .meta { font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.02em; color: var(--faint); }
 .ghead .all { color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
 .ghead .all:is(:hover, :focus-visible) { color: var(--accent); border-color: var(--accent); }
 
 .links { display: flex; flex-wrap: wrap; gap: 0.7rem 1.6rem; margin-top: 2.2rem; color: var(--muted); }
-.links a { border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
-.links a:hover { color: var(--accent); border-color: var(--accent); }
+.links a { border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s; }
+.links a:hover { color: var(--ink); }
 
 /* ---------- 星空下的展柜 ---------- */
 .cabinet .scrollx { overflow-x: auto; overflow-y: hidden; padding-top: 1.2rem; scrollbar-width: thin; }
