@@ -108,25 +108,36 @@ a:focus-visible {
   border-bottom: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
 }
 
-/* ---------- 星轨:单段解析尾迹,自夜空渐显并竖直切入脊线 ---------- */
+/* ---------- 星轨:全页单 SVG 绘制流星弧与左侧脊线,零跨容器接缝 ---------- */
 .sky {
   position: absolute; inset: 0; z-index: 0;
   width: 100%; height: 100%;
   pointer-events: none; overflow: hidden;
 }
 @keyframes bgIn { from { opacity: 0; } }
-.sky .rail, .sky .rail-glow {
+.sky .rail, .sky .rail-glow, .sky .rail-spine {
   fill: none;
-  stroke-linecap: round;
   stroke-linejoin: round;
+}
+.sky .rail, .sky .rail-glow {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
 }
-.sky .rail { stroke-width: 1.25; }
-.sky .rail-glow { stroke-width: 4; filter: blur(1.8px); }
+.sky .rail, .sky .rail-spine {
+  stroke-width: 1.25;
+  stroke-linecap: butt;
+}
+.sky .rail-glow {
+  stroke-width: 4;
+  stroke-linecap: round;
+  filter: blur(1.8px);
+}
 html.js .sky.intro .rail,
 html.js .sky.intro .rail-glow {
   animation: railDraw 1.45s 0.22s cubic-bezier(0.24, 0.86, 0.32, 1) both;
+}
+html.js .sky.intro .rail-spine {
+  animation: bgIn 0.55s 1.12s both;
 }
 @keyframes railDraw {
   from { stroke-dashoffset: 1; }
@@ -134,7 +145,7 @@ html.js .sky.intro .rail-glow {
 }
 
 /* ---------- hero ---------- */
-.hero { position: relative; min-height: calc(100svh - 4.25rem); display: flex; flex-direction: column; padding-top: var(--bar); }
+.hero { position: relative; z-index: 1; min-height: calc(100svh - 4.25rem); display: flex; flex-direction: column; padding-top: var(--bar); }
 .hero .wrap {
   position: relative; width: 100%; flex: 1;
   display: flex; flex-direction: column; justify-content: center;
@@ -263,7 +274,7 @@ html.js .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .who { animation: none; opacity: 1; transform: none; }
-  .sky, html.js .sky.intro .rail, html.js .sky.intro .rail-glow, html.js .rail-down.intro { animation: none; }
+  .sky, html.js .sky.intro .rail, html.js .sky.intro .rail-glow, html.js .sky.intro .rail-spine { animation: none; }
   .rise-mark, .hero-fall .row.depart b, .hero-fall .row.depart .en, .hero-fall .nd { transition: none; }
   .hero-fall .row { animation: none; opacity: 1; transform: none; }
   .hero-fall b, .hero-fall .en, .hero-fall .nd { transition: none; }
@@ -315,59 +326,25 @@ h2.star-hit::after { right: -0.55em; animation-delay: 0.1s; }
 }
 main, footer { position: relative; z-index: 1; }
 
-/* 脊线全程可悬停:贴线的窄带,星星在光标高度亮起,点击顺线回顶 */
+/* 流星全轨可悬停:沿「Hero 弯轨 + 左侧脊线」一体响应,星星随曲线切线倾斜跟随光标,点击沿轨飞回夜空 */
 .rise {
-  position: fixed; z-index: 15; top: 0; bottom: 0;
-  left: calc(var(--rail-x, -40px) - 28px);
-  width: 56px;
+  position: fixed; z-index: 15; left: 0; top: 0;
+  width: 48px; height: 48px; border-radius: 50%;
+  transform: translate3d(var(--rx, -80px), var(--ry, 60vh), 0) translate(-50%, -50%) rotate(var(--ra, 0deg));
   color: var(--accent); pointer-events: none;
 }
 .rise:focus-visible { outline: none; text-decoration: none; }
-@media (hover: hover) and (pointer: fine) {
-  .rise { pointer-events: auto; }
-}
 /* 触屏与窄屏:回顶星是悬停交互,整条不参与,杜绝任何残留渲染 */
 @media (max-width: 860px), (hover: none) {
   .rise { display: none; }
 }
-.home-body { position: relative; }
-.rail-down {
-  position: absolute; z-index: 2; pointer-events: none;
-  left: var(--rail-x, -40px); top: 0; bottom: 0; width: 0;
-}
-html.js .rail-down.intro {
-  animation: bgIn 0.65s 1.28s both;
-}
-/* 弯轨落点的站台星:流星线在这里交棒给脊线,独立于线条,绝不被纵向缩放压扁 */
-.rail-joint {
-  position: absolute; top: 0; left: 0;
-  width: 7px; height: 7px;
-  transform: translate(-50%, -50%);
-  background: var(--accent); opacity: 0.68;
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-}
-/* 脊线全程连贯不断线,随阅读视线向下渐次点亮,底部柔隐入页脚之上 */
-.rail-line {
-  position: absolute; top: 0; bottom: 0; left: 0; width: 1.25px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--accent) 82%, transparent) 0,
-    color-mix(in srgb, var(--accent) 50%, transparent) var(--rail-lit, 180px),
-    color-mix(in srgb, var(--accent) 22%, transparent) calc(var(--rail-lit, 180px) + 180px),
-    color-mix(in srgb, var(--accent) 18%, transparent) calc(100% - 5rem),
-    transparent 100%
-  );
-}
-@media (max-width: 860px) {
-  .rail-down { display: none; }
-}
+.home-body { position: relative; z-index: 1; }
 /* 脊线上的归星:阻尼跟随光标,核心亮星 + 向下渐尖锥形彗尾 + 贴轨微晕,点击沿流星线飞回夜空 */
 .rise-star {
-  position: absolute; left: 0; top: 0;
+  position: absolute; left: 50%; top: 50%;
   width: 13px; height: 13px; color: #dfefe9;
   opacity: 0; pointer-events: none;
-  transform: translate3d(28px, var(--ry, 60vh), 0) translate(-50%, -50%) scale(0.86);
+  transform: translate(-50%, -50%) scale(0.86);
   transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.2, 0.85, 0.3, 1);
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 88%, transparent));
 }
@@ -398,12 +375,13 @@ html.js .rail-down.intro {
     transparent 100%
   );
 }
-.rise:is(:hover, :focus-visible) .rise-star { opacity: 0; }
-/* 光标悬在真实脊线段(滚过 hero 之后)上才亮起 */
+/* 光标悬在真实轨迹(弯轨 + 脊线)上才亮起 */
+.rise.on-rail .rise-star,
 .rise.on-rail:is(:hover, :focus-visible) .rise-star {
   opacity: 1;
-  transform: translate3d(28px, var(--ry, 60vh), 0) translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1);
 }
+.rise.on-rail .rise-star::after,
 .rise.on-rail:is(:hover, :focus-visible) .rise-star::after {
   animation: riseTail 1.9s ease-in-out infinite;
 }

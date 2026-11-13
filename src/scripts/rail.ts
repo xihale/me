@@ -315,18 +315,21 @@ export function initHeroRail() {
   const narrowMq = matchMedia('(max-width: 860px)');
   bindFlight(rows, reducedMq, narrowMq);
 
-  const svg = hero.querySelector<SVGSVGElement>('.sky');
+  const main = hero.closest<HTMLElement>('main.home') ?? hero.parentElement;
+  const svg = (main ?? hero).querySelector<SVGSVGElement>('.sky');
   const rail = svg?.querySelector<SVGPathElement>('.rail');
   const glow = svg?.querySelector<SVGPathElement>('.rail-glow');
+  const spine = svg?.querySelector<SVGPathElement>('.rail-spine');
   const coreGrad = svg?.querySelector<SVGLinearGradientElement>('#rail-grad');
   const glowGrad = svg?.querySelector<SVGLinearGradientElement>('#rail-glow-grad');
+  const spineGrad = svg?.querySelector<SVGLinearGradientElement>('#spine-grad');
   if (!svg || !rail || !glow) return;
 
   const homeBody = document.querySelector<HTMLElement>('.home-body');
-  const railDown = document.querySelector<HTMLElement>('.rail-down');
   const mastEl = hero.querySelector<HTMLElement>('.m-masthead');
   const coreStops = coreGrad?.querySelectorAll('stop');
   const glowStops = glowGrad?.querySelectorAll('stop');
+  const spineStops = spineGrad?.querySelectorAll('stop');
   let introPlayed = false;
 
   const layout = () => {
@@ -336,6 +339,9 @@ export function initHeroRail() {
 
     const narrow = narrowMq.matches;
     const heroDoc = offsetWithin(hero, null);
+    const skyOff = main ? offsetWithin(hero, main) : { x: 0, y: 0 };
+    const mainW = main?.clientWidth || heroW;
+    const mainH = main?.clientHeight || heroH;
     const wrapLeft = wrap.offsetLeft;
     const wrapW = wrap.clientWidth;
     const fallPos = offsetWithin(fall, hero);
@@ -344,7 +350,7 @@ export function initHeroRail() {
 
     const railX = narrow
       ? Math.max(10, Math.min(20, padL * 0.45))
-      : Math.max(14, wrapLeft + Math.min(16, padL * 0.36));
+      : Math.round(Math.max(14, wrapLeft + Math.min(16, padL * 0.36)));
 
     const ndCenters = rows.map((r) => {
       const nd = r.querySelector<HTMLElement>('.nd');
@@ -364,7 +370,8 @@ export function initHeroRail() {
       ? Math.max(44, Math.min(88, (yLast - y0) * 0.28))
       : Math.max(76, Math.min(176, (yLast - y0) * 0.35));
     const maxYTurn = narrow ? heroH - 18 : heroH;
-    const yTurn = Math.min(maxYTurn, Math.max(yLast + (narrow ? 34 : 48), yLast + tailDrop));
+    const rawYTurn = Math.min(maxYTurn, Math.max(yLast + (narrow ? 34 : 48), yLast + tailDrop));
+    const yTurn = narrow ? rawYTurn : Math.round(rawYTurn);
     const vSpan = Math.max(80, yTurn - y0);
 
     let spanX: number;
@@ -424,31 +431,50 @@ export function initHeroRail() {
     const p2: Pt = { x: railX, y: yTurn - (uHead / 3) * vSpan };
     const p3: Pt = { x: railX, y: yTurn };
 
-    const d = `M${f2(p0.x)} ${f2(p0.y)} C${f2(p1.x)} ${f2(p1.y)} ${f2(p2.x)} ${f2(p2.y)} ${f2(p3.x)} ${f2(p3.y)}`
-      + (!narrow && heroH > yTurn + 0.5 ? ` V${f2(heroH)}` : '');
+    const sx = skyOff.x;
+    const sy = skyOff.y;
+    const d = `M${f2(sx + p0.x)} ${f2(sy + p0.y)} C${f2(sx + p1.x)} ${f2(sy + p1.y)} ${f2(sx + p2.x)} ${f2(sy + p2.y)} ${f2(sx + p3.x)} ${f2(sy + p3.y)}`;
 
-    svg.setAttribute('viewBox', `0 0 ${heroW} ${heroH}`);
-    const gradEndY = narrow ? yTurn : heroH;
+    svg.setAttribute('viewBox', `0 0 ${mainW} ${mainH}`);
     for (const g of [coreGrad, glowGrad]) {
       if (!g) continue;
-      g.setAttribute('x1', f2(p0.x));
-      g.setAttribute('y1', f2(p0.y));
-      g.setAttribute('x2', f2(railX));
-      g.setAttribute('y2', f2(gradEndY));
+      g.setAttribute('x1', f2(sx + p0.x));
+      g.setAttribute('y1', f2(sy + p0.y));
+      g.setAttribute('x2', f2(sx + railX));
+      g.setAttribute('y2', f2(sy + yTurn));
     }
     if (coreStops?.length) {
-      coreStops[coreStops.length - 1].setAttribute('stop-opacity', narrow ? '0' : '0.82');
+      coreStops[coreStops.length - 1].setAttribute('stop-opacity', narrow ? '0' : '0.48');
     }
     if (glowStops?.length) {
-      glowStops[glowStops.length - 1].setAttribute('stop-opacity', narrow ? '0' : '0.05');
+      glowStops[glowStops.length - 1].setAttribute('stop-opacity', '0');
     }
     glow.setAttribute('d', d);
     rail.setAttribute('d', d);
 
     if (narrow) {
+      spine?.removeAttribute('d');
       activeModel = null;
       document.documentElement.style.removeProperty('--rail-x');
     } else {
+      const spineTop = sy + yTurn;
+      const spineBot = mainH;
+      if (spine && spineBot > spineTop + 1) {
+        spine.setAttribute('d', `M${f2(sx + railX)} ${f2(spineTop)} V${f2(spineBot)}`);
+        if (spineGrad) {
+          spineGrad.setAttribute('x1', '0');
+          spineGrad.setAttribute('y1', f2(spineTop));
+          spineGrad.setAttribute('x2', '0');
+          spineGrad.setAttribute('y2', f2(spineBot));
+        }
+        if (spineStops && spineStops.length >= 2) {
+          const fadeFrac = Math.max(0.5, 1 - 80 / (spineBot - spineTop));
+          spineStops[1].setAttribute('offset', `${(fadeFrac * 100).toFixed(2)}%`);
+        }
+      } else {
+        spine?.removeAttribute('d');
+      }
+
       document.documentElement.style.setProperty('--rail-x', `${f2(railX)}px`);
 
       const bodyRef = homeBody ?? document.body;
@@ -473,9 +499,7 @@ export function initHeroRail() {
       introPlayed = true;
       if (!reducedMq.matches && window.scrollY < 48) {
         svg.classList.add('intro');
-        railDown?.classList.add('intro');
         rail.addEventListener('animationend', () => svg.classList.remove('intro'), { once: true });
-        railDown?.addEventListener('animationend', () => railDown.classList.remove('intro'), { once: true });
       }
     }
   };
@@ -493,6 +517,7 @@ export function initHeroRail() {
   const ro = new ResizeObserver(schedule);
   ro.observe(hero);
   ro.observe(fall);
+  if (main) ro.observe(main);
   narrowMq.addEventListener('change', layout);
   document.fonts?.ready.then(schedule);
 }
@@ -509,41 +534,82 @@ export function initRise() {
   if (!rise || !hero || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
   const reducedMq = matchMedia('(prefers-reduced-motion: reduce)');
-  let inStrip = false;
+  let lastClientX: number | null = null;
   let lastClientY: number | null = null;
+  let targetX = -80;
   let targetY = innerHeight * 0.6;
+  let targetA = 0;
+  let currentX = targetX;
   let currentY = targetY;
+  let currentA = targetA;
   let trackRaf = 0;
 
-  const onSpine = (clientY: number) => {
-    const topLim = hero.getBoundingClientRect().bottom + 10;
+  const applyPos = (x: number, y: number, a: number) => {
+    rise.style.setProperty('--rx', `${x.toFixed(1)}px`);
+    rise.style.setProperty('--ry', `${y.toFixed(1)}px`);
+    rise.style.setProperty('--ra', `${a.toFixed(2)}deg`);
+  };
+
+  const hitRail = (clientX: number, clientY: number) => {
+    const m = activeModel;
+    if (!m) return null;
+    const heroRect = hero.getBoundingClientRect();
+    const yHero = clientY - heroRect.top;
+    const topLim = Math.max(heroRect.top + m.yAtU(m.uHead * 0.88), 28);
     const botLim = footer ? footer.getBoundingClientRect().top - 14 : innerHeight + 100;
-    return clientY > topLim && clientY < botLim;
+    if (clientY < topLim || clientY > botLim) return null;
+
+    const railXAtY = m.xAtHeroY(yHero);
+    const slope = m.dxdyAtHeroY(yHero);
+    const perpDist = Math.abs(clientX - railXAtY) / Math.hypot(slope, 1);
+    if (perpDist > 22) return null;
+
+    const overInteractive = document
+      .elementsFromPoint(clientX, clientY)
+      .some((el) => el instanceof Element && Boolean(el.closest('a:not(.rise), button')));
+    if (overInteractive) return null;
+
+    return {
+      x: railXAtY,
+      y: clientY,
+      a: (Math.atan(-slope) * 180) / Math.PI,
+    };
   };
 
   const stepTrack = () => {
-    const diff = targetY - currentY;
-    if (Math.abs(diff) > 0.25) {
-      currentY += diff * 0.28;
-      rise.style.setProperty('--ry', `${currentY.toFixed(1)}px`);
+    const dx = targetX - currentX;
+    const dy = targetY - currentY;
+    const da = targetA - currentA;
+    if (Math.abs(dx) > 0.25 || Math.abs(dy) > 0.25 || Math.abs(da) > 0.15) {
+      currentX += dx * 0.28;
+      currentY += dy * 0.28;
+      currentA += da * 0.28;
+      applyPos(currentX, currentY, currentA);
       trackRaf = requestAnimationFrame(stepTrack);
     } else {
+      currentX = targetX;
       currentY = targetY;
-      rise.style.setProperty('--ry', `${currentY.toFixed(1)}px`);
+      currentA = targetA;
+      applyPos(currentX, currentY, currentA);
       trackRaf = 0;
     }
   };
 
-  const syncHover = (clientY: number | null, snap = false) => {
-    const active = !isFlying && clientY !== null && inStrip && onSpine(clientY);
+  const syncHover = (clientX: number | null, clientY: number | null, snap = false) => {
+    const hit = !isFlying && clientX !== null && clientY !== null ? hitRail(clientX, clientY) : null;
+    const active = hit !== null;
     const wasActive = rise.classList.contains('on-rail');
     rise.classList.toggle('on-rail', active);
     rise.style.pointerEvents = active ? 'auto' : 'none';
-    if (active && clientY !== null) {
-      targetY = clientY - rise.getBoundingClientRect().top;
+    if (hit) {
+      targetX = hit.x;
+      targetY = hit.y;
+      targetA = hit.a;
       if (!wasActive || snap || reducedMq.matches) {
+        currentX = targetX;
         currentY = targetY;
-        rise.style.setProperty('--ry', `${currentY.toFixed(1)}px`);
+        currentA = targetA;
+        applyPos(currentX, currentY, currentA);
       } else if (!trackRaf) {
         trackRaf = requestAnimationFrame(stepTrack);
       }
@@ -553,25 +619,42 @@ export function initRise() {
   window.addEventListener(
     'pointermove',
     (e) => {
-      const r = rise.getBoundingClientRect();
-      inStrip = e.clientX >= r.left && e.clientX <= r.right;
+      lastClientX = e.clientX;
       lastClientY = e.clientY;
-      syncHover(e.clientY);
+      syncHover(e.clientX, e.clientY);
     },
     { passive: true },
   );
-  window.addEventListener('scroll', () => {
-    if (lastClientY !== null) syncHover(lastClientY, true);
-  }, { passive: true });
-  rise.addEventListener('pointerleave', () => {
-    inStrip = false;
-    rise.classList.remove('on-rail');
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (lastClientX !== null && lastClientY !== null) syncHover(lastClientX, lastClientY, true);
+    },
+    { passive: true },
+  );
+  document.addEventListener('mouseleave', () => {
+    lastClientX = null;
+    lastClientY = null;
+    syncHover(null, null);
   });
   rise.addEventListener('focus', () => {
-    targetY = innerHeight * 0.6;
+    const m = activeModel;
+    if (!m) return;
+    const y = innerHeight * 0.6;
+    const heroRect = hero.getBoundingClientRect();
+    const yHero = y - heroRect.top;
+    const topLim = Math.max(heroRect.top + m.yAtU(m.uHead * 0.88), 28);
+    const botLim = footer ? footer.getBoundingClientRect().top - 14 : innerHeight + 100;
+    const valid = !isFlying && y >= topLim && y <= botLim;
+    targetX = m.xAtHeroY(yHero);
+    targetY = y;
+    targetA = (Math.atan(-m.dxdyAtHeroY(yHero)) * 180) / Math.PI;
+    currentX = targetX;
     currentY = targetY;
-    rise.style.setProperty('--ry', `${currentY.toFixed(1)}px`);
-    rise.classList.toggle('on-rail', !isFlying && onSpine(targetY));
+    currentA = targetA;
+    applyPos(currentX, currentY, currentA);
+    rise.classList.toggle('on-rail', valid);
+    rise.style.pointerEvents = valid ? 'auto' : 'none';
   });
 
   rise.addEventListener('click', (ev) => {
@@ -587,7 +670,7 @@ export function initRise() {
 
     const m = activeModel;
     const startScroll = window.scrollY;
-    const clickViewY = Math.max(48, Math.min(innerHeight - 36, currentY));
+    const clickViewY = Math.max(32, Math.min(innerHeight - 36, currentY));
     const startDocY = startScroll + clickViewY;
 
     // 终点顺着流星弧向右上夜空再延展少许,让星芒沿着原轨迹自然消隐入星海
@@ -595,7 +678,7 @@ export function initRise() {
     const uMaxSkyTop = 1 + Math.max(0.06, (m.y0 - 26) / m.vSpan);
     const uMaxSkyRight = 1 + Math.max(0.06, (m.heroW - 20 - (m.railX + m.spanX)) / slopeAtHead);
     const uSkyEnd = Math.min(m.uHead + 0.05, uMaxSkyTop, uMaxSkyRight);
-    const endDocY = Math.min(clickViewY - 16, m.heroTop + m.yAtU(uSkyEnd));
+    const endDocY = Math.min(startDocY - 20, m.heroTop + m.yAtU(uSkyEnd));
 
     const nodeDocYs = m.uNodes.map((u) => m.heroTop + m.yAtU(u));
     const passed = new Array<boolean>(nodeDocYs.length).fill(false);

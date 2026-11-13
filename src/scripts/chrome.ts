@@ -10,18 +10,6 @@ export function initChrome() {
   markBelow();
   addEventListener('scroll', markBelow, { passive: true });
 
-  // 左侧脊线随阅读视线向下点亮,底轴全程不断线,不缩放节点星芒
-  const homeBody = document.querySelector<HTMLElement>('.home-body');
-  if (homeBody && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const syncLit = () => {
-      const lit = Math.max(120, innerHeight * 0.62 - homeBody.getBoundingClientRect().top);
-      homeBody.style.setProperty('--rail-lit', `${Math.round(lit)}px`);
-    };
-    syncLit();
-    addEventListener('scroll', syncLit, { passive: true });
-    addEventListener('resize', syncLit, { passive: true });
-  }
-
   const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.bar nav a')].filter((a) =>
     a.getAttribute('href')?.startsWith('#')
   );

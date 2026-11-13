@@ -21,8 +21,7 @@
   }
 
   .d-only,
-  .bar[data-idle],
-  .rail-down {
+  .bar[data-idle] {
     display: none !important;
   }
 

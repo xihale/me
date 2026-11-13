@@ -47,26 +47,34 @@ const SECTIONS = [
   />
 
   <main id="top" class="home">
+    <!-- 星轨:单张全页 SVG 绘制曲线尾迹与左侧脊线,零容器接缝 -->
+    <svg class="sky" aria-hidden="true">
+      <defs>
+        <linearGradient id="rail-glow-grad" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
+          <stop offset="18%" stop-color="var(--accent)" stop-opacity="0.09"/>
+          <stop offset="52%" stop-color="var(--accent)" stop-opacity="0.22"/>
+          <stop offset="80%" stop-color="var(--accent)" stop-opacity="0"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="rail-grad" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
+          <stop offset="16%" stop-color="var(--accent)" stop-opacity="0.34"/>
+          <stop offset="54%" stop-color="var(--accent)" stop-opacity="0.72"/>
+          <stop offset="84%" stop-color="var(--accent)" stop-opacity="0.48"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.48"/>
+        </linearGradient>
+        <linearGradient id="spine-grad" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.48"/>
+          <stop offset="96%" stop-color="var(--accent)" stop-opacity="0.48"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path class="rail-glow" pathLength="1" fill="none" stroke="url(#rail-glow-grad)"/>
+      <path class="rail" pathLength="1" fill="none" stroke="url(#rail-grad)"/>
+      <path class="rail-spine" fill="none" stroke="url(#spine-grad)"/>
+    </svg>
     <section class="hero">
-      <!-- 星轨:单段解析三次贝塞尔尾迹,自夜空潜入并竖直切入左侧脊线 -->
-      <svg class="sky" aria-hidden="true">
-        <defs>
-          <linearGradient id="rail-glow-grad" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
-            <stop offset="16%" stop-color="var(--accent)" stop-opacity="0.09"/>
-            <stop offset="68%" stop-color="var(--accent)" stop-opacity="0.24"/>
-            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.05"/>
-          </linearGradient>
-          <linearGradient id="rail-grad" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
-            <stop offset="13%" stop-color="var(--accent)" stop-opacity="0.32"/>
-            <stop offset="58%" stop-color="var(--accent)" stop-opacity="0.66"/>
-            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.82"/>
-          </linearGradient>
-        </defs>
-        <path class="rail-glow" pathLength="1" fill="none" stroke="url(#rail-glow-grad)"/>
-        <path class="rail" pathLength="1" fill="none" stroke="url(#rail-grad)"/>
-      </svg>
       <div class="wrap">
         <div class="m-masthead" aria-hidden="true">
           <span class="m-brand">橱窗</span>
@@ -126,11 +134,6 @@ const SECTIONS = [
     </section>
 
     <div class="home-body">
-      <div class="rail-down" aria-hidden="true">
-        <span class="rail-joint"></span>
-        <span class="rail-line"></span>
-      </div>
-
       <div class="wrap">
       <section class="sec" id="collection">
         <header class="head rv">
