@@ -114,14 +114,9 @@ a:focus-visible {
   width: 100%; height: 100%;
   pointer-events: none; overflow: hidden;
 }
-@keyframes bgIn { from { opacity: 0; } }
 .sky .rail, .sky .rail-glow, .sky .rail-spine {
   fill: none;
   stroke-linejoin: round;
-}
-.sky .rail, .sky .rail-glow {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
 }
 .sky .rail, .sky .rail-spine {
   stroke-width: 1.25;
@@ -131,17 +126,6 @@ a:focus-visible {
   stroke-width: 4;
   stroke-linecap: round;
   filter: blur(1.8px);
-}
-html.js .sky.intro .rail,
-html.js .sky.intro .rail-glow {
-  animation: railDraw 1.45s 0.22s cubic-bezier(0.24, 0.86, 0.32, 1) both;
-}
-html.js .sky.intro .rail-spine {
-  animation: bgIn 0.55s 1.12s both;
-}
-@keyframes railDraw {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
 }
 
 /* ---------- hero ---------- */
@@ -274,7 +258,7 @@ html.js .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .who { animation: none; opacity: 1; transform: none; }
-  .sky, html.js .sky.intro .rail, html.js .sky.intro .rail-glow, html.js .sky.intro .rail-spine { animation: none; }
+  .sky { animation: none; }
   .rise-mark, .hero-fall .row.depart b, .hero-fall .row.depart .en, .hero-fall .nd { transition: none; }
   .hero-fall .row { animation: none; opacity: 1; transform: none; }
   .hero-fall b, .hero-fall .en, .hero-fall .nd { transition: none; }

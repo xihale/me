@@ -498,8 +498,32 @@ export function initHeroRail() {
     if (!introPlayed) {
       introPlayed = true;
       if (!reducedMq.matches && window.scrollY < 48) {
-        svg.classList.add('intro');
-        rail.addEventListener('animationend', () => svg.classList.remove('intro'), { once: true });
+        const startY = Math.max(0, sy + p0.y - 6);
+        const startBot = Math.max(0, mainH - startY);
+        const anim = narrow
+          ? svg.animate(
+              [
+                { clipPath: `inset(0px 0px ${f2(startBot)}px 0px)` },
+                { clipPath: `inset(0px 0px ${f2(Math.max(0, mainH - Math.min(mainH, sy + yTurn + 12)))}px 0px)` },
+              ],
+              { duration: 1350, delay: 220, easing: 'cubic-bezier(0.24, 0.84, 0.34, 1)', fill: 'both' },
+            )
+          : (() => {
+              const visEndY = Math.min(mainH, Math.max(sy + heroH, window.innerHeight) + 260);
+              const visBot = Math.max(0, mainH - visEndY);
+              const frames: Keyframe[] = visBot > 20
+                ? [
+                    { offset: 0, clipPath: `inset(0px 0px ${f2(startBot)}px 0px)`, easing: 'cubic-bezier(0.26, 0.12, 0.65, 1)' },
+                    { offset: 0.72, clipPath: `inset(0px 0px ${f2(visBot)}px 0px)`, easing: 'cubic-bezier(0.35, 0.05, 0.65, 1)' },
+                    { offset: 1, clipPath: 'inset(0px 0px 0px 0px)' },
+                  ]
+                : [
+                    { clipPath: `inset(0px 0px ${f2(startBot)}px 0px)` },
+                    { clipPath: 'inset(0px 0px 0px 0px)' },
+                  ];
+              return svg.animate(frames, { duration: 1650, delay: 220, fill: 'both' });
+            })();
+        anim.addEventListener('finish', () => anim.cancel(), { once: true });
       }
     }
   };
