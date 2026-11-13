@@ -1,9 +1,88 @@
 ---
 import { devices } from '../data/status';
+
 const T = ['$ zig build', '$ typst compile', '$ git push', 'Everything up-to-date'];
-const poem = ['床前明月光', '疑是地上霜', '举头望明月', '低头思故乡'];
-const cx = [202, 512, 713, 830, 928, 1031, 1115];
-const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89], [1090, 50]];
+const poem = ['心事浩茫连广宇', '于无声处听惊雷'];
+const cx1 = [202, 512, 713, 830, 928.5, 1031.5, 1115];
+const hit1 = [
+  [26, 352],
+  [388, 248],
+  [650, 126],
+  [790, 80],
+  [884, 89],
+  [987, 89],
+  [1090, 50],
+];
+
+const cx2 = [125.5, 357.5, 558, 692, 804, 902, 996, 1092];
+const hit2 = [
+  [12, 227],
+  [254, 207],
+  [492, 132],
+  [640, 104],
+  [762, 84],
+  [862, 80],
+  [956, 80],
+  [1050, 84],
+];
+
+const SHORT_NAMES: Record<string, string> = {
+  '机械革命 Yaoshi15Pro Series（GM5PQ0A）': 'Yaoshi15Pro',
+  'FriendlyElec NanoPi R3S': 'NanoPi R3S',
+};
+const shortLabel = (name: string) => SHORT_NAMES[name] ?? name;
+
+type KeyRect = { x: number; y: number; w: number; h: number; acc?: boolean };
+function buildKeys(
+  x0: number,
+  y0: number,
+  u: number,
+  gap: number,
+  h: number,
+  vgap: number,
+  rows: (number | { w: number; gap?: number; hRows?: number; dy?: number; acc?: boolean })[][],
+): KeyRect[] {
+  const out: KeyRect[] = [];
+  rows.forEach((row, r) => {
+    let x = x0;
+    const baseY = y0 + r * (h + vgap);
+    row.forEach((item) => {
+      const spec = typeof item === 'number' ? { w: item } : item;
+      if (spec.gap) x += spec.gap;
+      const w = spec.w * u + Math.max(0, spec.w - 1) * gap;
+      const kh = spec.hRows ? spec.hRows * h + (spec.hRows - 1) * vgap : h;
+      out.push({
+        x: +x.toFixed(1),
+        y: +(baseY + (spec.dy ?? 0)).toFixed(1),
+        w: +w.toFixed(1),
+        h: +kh.toFixed(1),
+        acc: spec.acc,
+      });
+      x += w + gap;
+    });
+  });
+  return out;
+}
+
+// 08 狼蛛 S98：标准 98 配列 (15u 主键区 + 1.5u 分隔 + 0.5u/0.5u 对称独立方向岛 + 4u 数字区)
+const s98Keys = buildKeys(28.8, 140, 8.1, 1.4, 7.6, 1.8, [
+  [{ w: 1, acc: true }, { w: 1, gap: 3.5 }, 1, 1, 1, { w: 1, gap: 2.5 }, 1, 1, 1, { w: 1, gap: 2.5 }, 1, 1, 1, { w: 1, gap: 1.0 }],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, { w: 1, gap: 14.25 }, 1, 1, 1],
+  [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, { w: 1, gap: 14.25 }, 1, 1, { w: 1, hRows: 2 }],
+  [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.25, { w: 1, gap: 14.25 }, 1, 1],
+  [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.75, { w: 1, dy: 1.4 }, { w: 1, gap: 14.25 }, 1, 1, { w: 1, hRows: 2 }],
+  [1.25, 1.25, 1.25, 6.25, 1.25, 1.25, { w: 1, gap: 4.75, dy: 1.4 }, { w: 1, dy: 1.4 }, { w: 1, dy: 1.4 }, { w: 2, gap: 4.75 }, 1],
+]);
+
+// 09 长城 E50：纤薄剪刀脚办公配列 (F 区功能分组 + 对称方向岛 + 紧凑数字区)
+const e50Keys = buildKeys(268.4, 155.2, 7.55, 1.2, 6.2, 1.4, [
+  [{ w: 1, acc: true }, { w: 1, gap: 3.125 }, 1, 1, 1, { w: 1, gap: 2.3 }, 1, 1, 1, { w: 1, gap: 2.3 }, 1, 1, 1, { w: 1, gap: 1.025 }, { w: 1, gap: 13.125 }, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, { w: 1, gap: 13.125 }, 1, 1, 1],
+  [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, { w: 1, gap: 13.125 }, 1, 1, { w: 1, hRows: 2 }],
+  [1.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.25, { w: 1, gap: 13.125 }, 1, 1],
+  [2.25, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.75, 1, { w: 1, gap: 13.125 }, 1, 1, { w: 1, hRows: 2 }],
+  [1.25, 1.25, 1.25, 6.25, 1.25, 1.25, { w: 1, gap: 4.375 }, 1, 1, { w: 2, gap: 4.375 }, 1],
+]);
 ---
 <div class="cabinet" id="cabinet">
   <div class="cap">
@@ -18,142 +97,500 @@ const hit = [[26, 350], [388, 250], [651, 125], [790, 80], [884, 89], [987, 89],
     <div class="live" aria-live="polite">
       <div class="live-meta">
         <p class="mono dim" id="cap-i"></p>
+        <span class="m-cap-cnt mono" id="cap-cnt">01 / {String(devices.length).padStart(2, '0')}</span>
       </div>
       <h3 id="cap-n"></h3>
     </div>
   </div>
+
+  <!-- 上层：主机、平板、阅读器、手机与穿戴 (01–07) -->
   <div class="scrollx">
     <div class="stage">
-    <svg viewBox="0 0 1168 372" role="group" aria-label="设备陈列">
-      <line class="floor" x1="0" y1="300.5" x2="1168" y2="300.5" />
-      <line class="floor-b" x1="0" y1="306.5" x2="1168" y2="306.5" />
-
-      <!-- 01 laptop -->
-      <g class="dev" tabindex="0" role="button" data-i="0" aria-label={`${devices[0].kind} ${devices[0].name}`}>
-        <rect class="hit" x={hit[0][0]} y="60" width={hit[0][1]} height="300" />
-        <g class="lift">
-          <rect class="body" x="44" y="90" width="316" height="200" rx="8" />
-          <rect class="scr" x="52" y="98" width="300" height="184" rx="2" />
-          <defs>
-            {T.map((_, i) => (
-              <clipPath id={`ty${i}`}><rect class="ty" style={`--d:${i * 1.6}s`} x="60" y={106 + i * 20} height="18" /></clipPath>
-            ))}
-          </defs>
-          {T.map((t, i) => (
-            <text class="mono-t" x="62" y={120 + i * 20} clip-path={`url(#ty${i})`}>
-              <tspan class={t.startsWith('$') ? 'p' : 'o'}>{t}</tspan>
-            </text>
-          ))}
-          <rect class="cur" x="62" y="196" width="7" height="12" />
-          <rect class="foot-l" x="36" y="290" width="332" height="10" rx="5" />
-          <rect class="notch" x="176" y="290" width="52" height="4" rx="2" />
+      <svg viewBox="0 0 1168 334" role="group" aria-label="随身与计算设备陈列">
+        <line class="floor" x1="0" y1="280.5" x2="1168" y2="280.5" />
+        <g class="ruler" aria-hidden="true">
+          {Array.from({ length: 47 }, (_, idx) => {
+            const x = 32 + idx * 24;
+            return <line class="r-tick" x1={x} y1="280.5" x2={x} y2={idx % 4 === 0 ? 286 : 283} />;
+          })}
         </g>
-        <text class="tk" x={cx[0]} y="336">01</text>
-      </g>
 
-      <!-- 02 tablet -->
-      <g class="dev" tabindex="0" role="button" data-i="1" aria-label={`${devices[1].kind} ${devices[1].name}`}>
-        <rect class="hit" x={hit[1][0]} y="100" width={hit[1][1]} height="260" />
-        <g class="lift">
-          <rect class="body" x="398" y="140" width="229" height="150" rx="10" />
-          <rect class="scr paper" x="407" y="149" width="211" height="132" rx="3" />
-          <g class="sudoku" transform="translate(452 155)">
-            <rect width="120" height="120" fill="none" class="gl-t" />
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <>
-                <line class={n % 3 ? 'gl' : 'gl-t'} x1={n * 13.33} y1="0" x2={n * 13.33} y2="120" />
-                <line class={n % 3 ? 'gl' : 'gl-t'} x1="0" y1={n * 13.33} x2="120" y2={n * 13.33} />
-              </>
-            ))}
-            {[[0,0,5],[1,0,3],[4,0,7],[0,1,6],[3,1,1],[4,1,9],[5,1,5],[1,2,9],[2,2,8],[7,2,6],[0,3,8],[4,3,6],[8,3,3],[0,4,4],[3,4,8],[5,4,3],[8,4,1],[0,5,7],[4,5,2],[8,5,6],[1,6,6],[6,6,2],[7,6,8],[3,7,4],[4,7,1],[5,7,9],[8,7,5],[4,8,8],[7,8,7],[8,8,9]].map(([c, r, v]) => (
-              <text class="dg" x={c * 13.33 + 6.7} y={r * 13.33 + 10.5}>{v}</text>
-            ))}
+        <!-- 01 机械革命 Yaoshi15Pro -->
+        <g class="dev on" tabindex="0" role="button" data-i="0" aria-label={`${devices[0].kind} ${devices[0].name}`}>
+          <rect class="hit" x={hit1[0][0]} y="52" width={hit1[0][1]} height="266" />
+          <g class="lift">
+            <rect class="body" x="44" y="68" width="316" height="202" rx="7" />
+            <rect class="scr" x="53" y="77" width="298" height="184" rx="2" />
+            <circle class="cam" cx="202" cy="72.5" r="1.2" />
+            <g class="scr-ui">
+              {T.map((t, i) => (
+                <text class="mono-t" x="68" y={108 + i * 20}>
+                  <tspan class={t.startsWith('$') ? 'p' : 'o'}>{t}</tspan>
+                </text>
+              ))}
+              <rect class="cur" x="68" y="180" width="6.5" height="11" />
+            </g>
+            <line class="hinge" x1="56" y1="270" x2="348" y2="270" />
+            <path class="deck" d="M35 273 H369 A2 2 0 0 1 371 275 V277 A3 3 0 0 1 368 280 H36 A3 3 0 0 1 33 277 V275 A2 2 0 0 1 35 273 Z" />
+            <path class="notch" d="M178 273 H226 A2 2 0 0 1 224 275.5 H180 A2 2 0 0 1 178 273 Z" />
           </g>
-          <rect class="foot" x="500" y="290" width="26" height="10" rx="2" />
+          <line class="tk-line" x1={cx1[0]} y1="280.5" x2={cx1[0]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[0]},276.5 ${cx1[0] + 3.5},280.5 ${cx1[0]},284.5 ${cx1[0] - 3.5},280.5`} />
+          <text class="tk" x={cx1[0]} y="310">01</text>
         </g>
-        <text class="tk" x={cx[1]} y="336">02</text>
-      </g>
 
-      <!-- 03 kindle -->
-      <g class="dev" tabindex="0" role="button" data-i="2" aria-label={`${devices[2].kind} ${devices[2].name}`}>
-        <rect class="hit" x={hit[2][0]} y="100" width={hit[2][1]} height="260" />
-        <g class="lift">
-          <rect class="body" x="661" y="138" width="105" height="152" rx="6" />
-          <rect class="scr ink" x="673" y="150" width="81" height="116" rx="1" />
-          {poem.map((l, i) => (
-            <text class="poem" x="713.5" y={182 + i * 18} text-anchor="middle">{l}</text>
-          ))}
-          <text class="pg" x="713.5" y="258" text-anchor="middle">— 1 —</text>
-          <rect class="foot" x="700" y="290" width="26" height="10" rx="2" />
+        <!-- 02 Mi Pad 6 Pro -->
+        <g class="dev" tabindex="0" role="button" data-i="1" aria-label={`${devices[1].kind} ${devices[1].name}`}>
+          <rect class="hit" x={hit1[1][0]} y="110" width={hit1[1][1]} height="208" />
+          <g class="lift">
+            <rect class="body" x="398" y="130" width="228" height="150" rx="8" />
+            <rect class="scr" x="407" y="139" width="210" height="132" rx="2.5" />
+            <circle class="cam" cx="512" cy="134.5" r="1.2" />
+            <g class="scr-ui">
+              <g class="sudoku" transform="translate(453.5 146.5)">
+                <rect class="gl-cell" x="52" y="39" width="13" height="13" />
+                <rect width="117" height="117" fill="none" class="gl-t" />
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <>
+                    <line class={n % 3 ? 'gl' : 'gl-t'} x1={n * 13} y1="0" x2={n * 13} y2="117" />
+                    <line class={n % 3 ? 'gl' : 'gl-t'} x1="0" y1={n * 13} x2="117" y2={n * 13} />
+                  </>
+                ))}
+                {[[0,0,5],[1,0,3],[4,0,7],[0,1,6],[3,1,1],[4,1,9],[5,1,5],[1,2,9],[2,2,8],[7,2,6],[0,3,8],[4,3,6],[8,3,3],[0,4,4],[3,4,8],[5,4,3],[8,4,1],[0,5,7],[4,5,2],[8,5,6],[1,6,6],[6,6,2],[7,6,8],[3,7,4],[4,7,1],[5,7,9],[8,7,5],[4,8,8],[7,8,7],[8,8,9]].map(([c, r, v]) => (
+                  <text class="dg" x={c * 13 + 6.5} y={r * 13 + 9.6}>{v}</text>
+                ))}
+              </g>
+            </g>
+          </g>
+          <line class="tk-line" x1={cx1[1]} y1="280.5" x2={cx1[1]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[1]},276.5 ${cx1[1] + 3.5},280.5 ${cx1[1]},284.5 ${cx1[1] - 3.5},280.5`} />
+          <text class="tk" x={cx1[1]} y="310">02</text>
         </g>
-        <text class="tk" x={cx[2]} y="336">03</text>
-      </g>
 
-      <!-- 04 iphone -->
-      <g class="dev" tabindex="0" role="button" data-i="3" aria-label={`${devices[3].kind} ${devices[3].name}`}>
-        <rect class="hit" x={hit[3][0]} y="120" width={hit[3][1]} height="240" />
-        <g class="lift">
-          <rect class="body" x="800" y="166" width="60" height="124" rx="9" />
-          <rect class="scr" x="805" y="182" width="50" height="90" rx="1" />
-          <rect class="spk" x="822" y="173" width="16" height="2.5" rx="1.2" />
-          <circle class="home" cx="830" cy="281" r="5.5" />
-          <text class="clk" x="830" y="224" text-anchor="middle" data-clock>10:42</text>
-          <rect class="foot" x="818" y="290" width="24" height="10" rx="2" />
+        <!-- 03 Kindle KPW3 -->
+        <g class="dev" tabindex="0" role="button" data-i="2" aria-label={`${devices[2].kind} ${devices[2].name}`}>
+          <rect class="hit" x={hit1[2][0]} y="110" width={hit1[2][1]} height="208" />
+          <g class="lift">
+            <rect class="body" x="660" y="128" width="106" height="152" rx="5" />
+            <rect class="scr" x="672" y="140" width="82" height="114" rx="1" />
+            <g class="scr-ui">
+              <text class="pg" x="713" y="153" text-anchor="middle">无题 · 鲁迅</text>
+              <line class="pg-rule" x1="686" y1="158" x2="740" y2="158" />
+              {poem.map((l, i) => (
+                <text class="poem" x="713" y={187 + i * 19} text-anchor="middle">{l}</text>
+              ))}
+              <text class="pg" x="713" y="244" text-anchor="middle">— 14 —</text>
+            </g>
+            <line class="chin-tick" x1="704" y1="268" x2="722" y2="268" />
+          </g>
+          <line class="tk-line" x1={cx1[2]} y1="280.5" x2={cx1[2]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[2]},276.5 ${cx1[2] + 3.5},280.5 ${cx1[2]},284.5 ${cx1[2] - 3.5},280.5`} />
+          <text class="tk" x={cx1[2]} y="310">03</text>
         </g>
-        <text class="tk" x={cx[3]} y="336">04</text>
-      </g>
 
-      <!-- 05 redmi -->
-      <g class="dev" tabindex="0" role="button" data-i="4" aria-label={`${devices[4].kind} ${devices[4].name}`}>
-        <rect class="hit" x={hit[4][0]} y="100" width={hit[4][1]} height="260" />
-        <g class="lift">
-          <rect class="body" x="894" y="144" width="69" height="146" rx="12" />
-          <rect class="scr" x="897" y="147" width="63" height="140" rx="10" />
-          <circle class="cam" cx="928.5" cy="155" r="2.2" />
-          <circle class="ring" cx="928.5" cy="246" r="24" />
-          <text class="clk" x="928.5" y="206" text-anchor="middle" data-clock>10:42</text>
-          <rect class="foot" x="916" y="290" width="25" height="10" rx="2" />
+        <!-- 04 iPhone 7 Plus -->
+        <g class="dev" tabindex="0" role="button" data-i="3" aria-label={`${devices[3].kind} ${devices[3].name}`}>
+          <rect class="hit" x={hit1[3][0]} y="136" width={hit1[3][1]} height="182" />
+          <g class="lift">
+            <rect class="body" x="800" y="154" width="60" height="126" rx="8.5" />
+            <rect class="scr" x="804.5" y="170" width="51" height="92" rx="1" />
+            <circle class="cam" cx="816" cy="162" r="1.1" />
+            <line class="spk" x1="823" y1="162" x2="837" y2="162" />
+            <g class="scr-ui">
+              <text class="clk" x="830" y="213" text-anchor="middle" data-clock>11:16</text>
+            </g>
+            <circle class="home" cx="830" cy="270.5" r="5" />
+          </g>
+          <line class="tk-line" x1={cx1[3]} y1="280.5" x2={cx1[3]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[3]},276.5 ${cx1[3] + 3.5},280.5 ${cx1[3]},284.5 ${cx1[3] - 3.5},280.5`} />
+          <text class="tk" x={cx1[3]} y="310">04</text>
         </g>
-        <text class="tk" x={cx[4]} y="336">05</text>
-      </g>
 
-      <!-- 06 honor -->
-      <g class="dev" tabindex="0" role="button" data-i="5" aria-label={`${devices[5].kind} ${devices[5].name}`}>
-        <rect class="hit" x={hit[5][0]} y="100" width={hit[5][1]} height="260" />
-        <g class="lift">
-          <rect class="body" x="997" y="143" width="69" height="147" rx="11" />
-          <rect class="scr" x="1000" y="146" width="63" height="141" rx="9" />
-          <rect class="pop" x="1025" y="139.5" width="13" height="4" rx="1.5" />
-          {[12, 20, 28].map((r) => <circle class="ring2" cx="1031.5" cy="248" r={r} />)}
-          <text class="clk" x="1031.5" y="206" text-anchor="middle" data-clock>10:42</text>
-          <rect class="foot" x="1019" y="290" width="25" height="10" rx="2" />
+        <!-- 05 Redmi Turbo 4 Pro -->
+        <g class="dev" tabindex="0" role="button" data-i="4" aria-label={`${devices[4].kind} ${devices[4].name}`}>
+          <rect class="hit" x={hit1[4][0]} y="116" width={hit1[4][1]} height="202" />
+          <g class="lift">
+            <rect class="body" x="894" y="133" width="69" height="147" rx="10.5" />
+            <rect class="scr" x="897.5" y="136.5" width="62" height="140" rx="8" />
+            <line class="side-tick" x1="963" y1="162" x2="963" y2="176" />
+            <line class="side-tick" x1="963" y1="182" x2="963" y2="191" />
+            <circle class="cam" cx="928.5" cy="143.5" r="1.6" />
+            <g class="scr-ui">
+              <text class="clk" x="928.5" y="180" text-anchor="middle" data-clock>11:16</text>
+              <circle class="ring" cx="928.5" cy="246" r="10" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx1[4]} y1="280.5" x2={cx1[4]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[4]},276.5 ${cx1[4] + 3.5},280.5 ${cx1[4]},284.5 ${cx1[4] - 3.5},280.5`} />
+          <text class="tk" x={cx1[4]} y="310">05</text>
         </g>
-        <text class="tk" x={cx[5]} y="336">06</text>
-      </g>
 
-      <!-- 07 band -->
-      <g class="dev" tabindex="0" role="button" data-i="6" aria-label={`${devices[6].kind} ${devices[6].name}`}>
-        <rect class="hit" x={hit[6][0]} y="140" width={hit[6][1]} height="220" />
-        <g class="lift">
-          <rect class="body" x="1104" y="176" width="22" height="116" rx="4" />
-          <rect class="body" x="1099" y="214" width="32" height="40" rx="10" />
-          <rect class="scr" x="1102" y="217" width="26" height="34" rx="8" />
-          <text class="clk s" x="1115" y="238" text-anchor="middle" data-clock>10:42</text>
-          <rect class="foot" x="1105" y="292" width="20" height="8" rx="2" />
+        <!-- 06 HONOR 9X Pro -->
+        <g class="dev" tabindex="0" role="button" data-i="5" aria-label={`${devices[5].kind} ${devices[5].name}`}>
+          <rect class="hit" x={hit1[5][0]} y="112" width={hit1[5][1]} height="206" />
+          <g class="lift">
+            <rect class="pop" x="1024.5" y="123" width="14" height="9" rx="1.5" />
+            <circle class="cam" cx="1031.5" cy="127.5" r="2" />
+            <rect class="body" x="997" y="132" width="69" height="148" rx="10" />
+            <rect class="scr" x="1000.5" y="135.5" width="62" height="141" rx="7.5" />
+            <line class="side-tick" x1="1066" y1="176" x2="1066" y2="192" />
+            <g class="scr-ui">
+              {[13, 21, 29].map((r) => <circle class="ring2" cx="1031.5" cy="233" r={r} />)}
+              <text class="clk" x="1031.5" y="179" text-anchor="middle" data-clock>11:16</text>
+            </g>
+          </g>
+          <line class="tk-line" x1={cx1[5]} y1="280.5" x2={cx1[5]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[5]},276.5 ${cx1[5] + 3.5},280.5 ${cx1[5]},284.5 ${cx1[5] - 3.5},280.5`} />
+          <text class="tk" x={cx1[5]} y="310">06</text>
         </g>
-        <text class="tk" x={cx[6]} y="336">07</text>
-      </g>
 
-    </svg>
-      {cx.map((c, k) => <i class="snap" style={`left:${((c / 1168) * 100).toFixed(3)}%`} data-i={k} />)}
+        <!-- 07 HUAWEI Band 9 -->
+        <g class="dev" tabindex="0" role="button" data-i="6" aria-label={`${devices[6].kind} ${devices[6].name}`}>
+          <rect class="hit" x={hit1[6][0]} y="150" width={hit1[6][1]} height="168" />
+          <g class="lift">
+            <path class="strap" d="M1105 164 Q1115 162 1125 164 L1124 279.5 Q1115 280.5 1106 279.5 Z" />
+            <rect class="body" x="1100" y="199" width="30" height="44" rx="8.5" />
+            <rect class="scr" x="1103.5" y="202.5" width="23" height="37" rx="5.5" />
+            <line class="side-tick" x1="1130.5" y1="216" x2="1130.5" y2="225" />
+            <g class="scr-ui">
+              <text class="clk s" x="1115" y="218" text-anchor="middle" data-clock>11:16</text>
+              <path class="band-arc" d="M1115 224.5 A4.2 4.2 0 1 1 1111.2 230" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx1[6]} y1="280.5" x2={cx1[6]} y2="292" />
+          <polygon class="tk-star" points={`${cx1[6]},276.5 ${cx1[6] + 3.5},280.5 ${cx1[6]},284.5 ${cx1[6] - 3.5},280.5`} />
+          <text class="tk" x={cx1[6]} y="310">07</text>
+        </g>
+      </svg>
+      {cx1.map((c, k) => <i class="snap" style={`left:${((c / 1168) * 100).toFixed(3)}%`} data-i={k} />)}
     </div>
   </div>
+
+  <!-- 下层：键盘、手柄、软路由与耳机 (08–15) -->
+  <div class="scrollx shelf2">
+    <div class="stage">
+      <svg viewBox="0 0 1168 258" role="group" aria-label="外设、路由与耳机陈列">
+        <line class="floor" x1="0" y1="204.5" x2="1168" y2="204.5" />
+        <g class="ruler" aria-hidden="true">
+          {Array.from({ length: 47 }, (_, idx) => {
+            const x = 32 + idx * 24;
+            return <line class="r-tick" x1={x} y1="204.5" x2={x} y2={idx % 4 === 0 ? 210 : 207} />;
+          })}
+        </g>
+
+        <!-- 08 狼蛛 S98 -->
+        <g class="dev" tabindex="0" role="button" data-i="7" aria-label={`${devices[7].kind} ${devices[7].name}`}>
+          <rect class="hit" x={hit2[0][0]} y="96" width={hit2[0][1]} height="146" />
+          <g class="lift">
+            <rect class="body" x="20" y="133" width="211" height="71.5" rx="4.5" />
+            <rect class="scr" x="24.5" y="137" width="202" height="63.5" rx="2" />
+            <g class="scr-ui">
+              {s98Keys.map((k) => (
+                <rect class={k.acc ? 'kb-acc' : 'kb-key'} x={k.x} y={k.y} width={k.w} height={k.h} rx="0.9" />
+              ))}
+              <rect class="kb-screen" x="185.55" y="140" width="17.6" height="7.6" rx="1" />
+              <circle class="kb-knob" cx="218.1" cy="143.8" r="4.2" />
+              <circle class="cam" cx="218.1" cy="143.8" r="1.1" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[0]} y1="204.5" x2={cx2[0]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[0]},200.5 ${cx2[0] + 3.5},204.5 ${cx2[0]},208.5 ${cx2[0] - 3.5},204.5`} />
+          <text class="tk" x={cx2[0]} y="234">08</text>
+        </g>
+
+        <!-- 09 长城 E50 -->
+        <g class="dev" tabindex="0" role="button" data-i="8" aria-label={`${devices[8].kind} ${devices[8].name}`}>
+          <rect class="hit" x={hit2[1][0]} y="106" width={hit2[1][1]} height="136" />
+          <g class="lift">
+            <rect class="body" x="262" y="146" width="191" height="58.5" rx="2.5" />
+            <rect class="scr" x="265.5" y="153" width="184" height="48.5" rx="1.2" />
+            <g class="scr-ui">
+              <circle class="cam" cx="428" cy="149.5" r="0.9" />
+              <circle class="led-muted" cx="434.5" cy="149.5" r="0.9" />
+              <circle class="led-muted" cx="441" cy="149.5" r="0.9" />
+              {e50Keys.map((k) => (
+                <rect class={k.acc ? 'kb-acc' : 'kb-key'} x={k.x} y={k.y} width={k.w} height={k.h} rx="0.6" />
+              ))}
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[1]} y1="204.5" x2={cx2[1]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[1]},200.5 ${cx2[1] + 3.5},204.5 ${cx2[1]},208.5 ${cx2[1] - 3.5},204.5`} />
+          <text class="tk" x={cx2[1]} y="234">09</text>
+        </g>
+
+        <!-- 10 Google Stadia -->
+        <g class="dev" tabindex="0" role="button" data-i="9" aria-label={`${devices[9].kind} ${devices[9].name}`}>
+          <rect class="hit" x={hit2[2][0]} y="106" width={hit2[2][1]} height="136" />
+          <g class="lift">
+            <!-- 肩键微廓 -->
+            <path class="side-tick" d="M518 130 Q527 127 536 130 M580 130 Q589 127 598 130" fill="none" />
+            <!-- 对称手柄壳体，双握把端稳落基准线 -->
+            <path class="body" d="M524 132 H592 C604 132 611 144 614 162 L617 190 C618 199 610 204.5 602 204.5 C594 204.5 588 197 583 183 C579 175 573 174 558 174 C543 174 537 175 533 183 C528 197 522 204.5 514 204.5 C506 204.5 498 199 499 190 L502 162 C505 144 512 132 524 132 Z" />
+            <g class="scr-ui">
+              <!-- 左十字键 -->
+              <path class="kb-key" d="M521 144 H525 V148 H529 V152 H525 V156 H521 V152 H517 V148 H521 Z" />
+              <!-- 右 ABXY 四键 -->
+              <circle class="kb-key" cx="593" cy="144.5" r="2.2" />
+              <circle class="kb-key" cx="598.5" cy="150" r="2.2" />
+              <circle class="kb-key" cx="593" cy="155.5" r="2.2" />
+              <circle class="kb-key" cx="587.5" cy="150" r="2.2" />
+              <!-- 中央 Stadia 徽标键与双小功能键 -->
+              <circle class="kb-acc" cx="558" cy="149" r="4.5" />
+              <path class="band-arc" d="M555.8 148 Q558 146.3 560.2 148 M556.3 150.2 Q558 149 559.7 150.2" />
+              <circle class="kb-key" cx="548.5" cy="153.5" r="1.5" />
+              <circle class="kb-key" cx="567.5" cy="153.5" r="1.5" />
+              <!-- 对称双摇杆 -->
+              <circle class="kb-key" cx="538" cy="164" r="6.8" />
+              <circle class="kb-key" cx="538" cy="164" r="4" />
+              <circle class="kb-key" cx="578" cy="164" r="6.8" />
+              <circle class="kb-key" cx="578" cy="164" r="4" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[2]} y1="204.5" x2={cx2[2]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[2]},200.5 ${cx2[2] + 3.5},204.5 ${cx2[2]},208.5 ${cx2[2] - 3.5},204.5`} />
+          <text class="tk" x={cx2[2]} y="234">10</text>
+        </g>
+
+        <!-- 11 FriendlyElec NanoPi R3S -->
+        <g class="dev" tabindex="0" role="button" data-i="10" aria-label={`${devices[10].kind} ${devices[10].name}`}>
+          <rect class="hit" x={hit2[3][0]} y="124" width={hit2[3][1]} height="118" />
+          <g class="lift">
+            <rect class="body" x="648" y="148" width="88" height="54" rx="3" />
+            <line class="hinge" x1="654" y1="154" x2="730" y2="154" />
+            <line class="hinge" x1="654" y1="157.5" x2="730" y2="157.5" />
+            <rect class="side-tick" x="656" y="202" width="10" height="2.2" rx="0.8" />
+            <rect class="side-tick" x="718" y="202" width="10" height="2.2" rx="0.8" />
+            <g class="scr-ui">
+              <circle class="cam" cx="660" cy="165" r="1.4" />
+              <circle class="cam" cx="668" cy="165" r="1.4" />
+              <circle class="led-muted" cx="676" cy="165" r="1.4" />
+              <circle class="led-muted" cx="684" cy="165" r="1.4" />
+              <text class="pg" x="724" y="166.5" text-anchor="end">R3S</text>
+              <rect class="port" x="658" y="176" width="16" height="14" rx="1" />
+              <rect class="port" x="680" y="176" width="16" height="14" rx="1" />
+              <rect class="port" x="708" y="182" width="12" height="5" rx="2.5" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[3]} y1="204.5" x2={cx2[3]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[3]},200.5 ${cx2[3] + 3.5},204.5 ${cx2[3]},208.5 ${cx2[3] - 3.5},204.5`} />
+          <text class="tk" x={cx2[3]} y="234">11</text>
+        </g>
+
+        <!-- 12 iQOO TWS2 -->
+        <g class="dev" tabindex="0" role="button" data-i="11" aria-label={`${devices[11].kind} ${devices[11].name}`}>
+          <rect class="hit" x={hit2[4][0]} y="124" width={hit2[4][1]} height="118" />
+          <g class="lift">
+            <rect class="body" x="774" y="156" width="42" height="48" rx="16" />
+            <path class="hinge" d="M775 174 Q795 177.5 815 174" fill="none" />
+            <circle class="cam" cx="795" cy="183.5" r="1.3" />
+            <path class="body" d="M826 158 C833 158 836 163 836 169 C836 174 832 176 830 178 V201.5 A2.2 2.2 0 0 1 825.5 201.5 V176 C821.5 174 820 169 820 164 C820 160 822.5 158 826 158 Z" />
+            <circle class="scr" cx="823" cy="166" r="2.8" />
+          </g>
+          <line class="tk-line" x1={cx2[4]} y1="204.5" x2={cx2[4]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[4]},200.5 ${cx2[4] + 3.5},204.5 ${cx2[4]},208.5 ${cx2[4] - 3.5},204.5`} />
+          <text class="tk" x={cx2[4]} y="234">12</text>
+        </g>
+
+        <!-- 13 天使吉米 RITA（无线头戴式耳机） -->
+        <g class="dev" tabindex="0" role="button" data-i="12" aria-label={`${devices[12].kind} ${devices[12].name}`}>
+          <rect class="hit" x={hit2[5][0]} y="108" width={hit2[5][1]} height="134" />
+          <g class="lift">
+            <path class="body" d="M872 167 C872 128 886 119 902 119 C918 119 932 128 932 167 L927 167 C927 133 915 125 902 125 C889 125 877 133 877 167 Z" />
+            <path class="hinge" d="M883 137 C889 129 915 129 921 137" fill="none" />
+            <line class="side-tick" x1="874.5" y1="167" x2="875.5" y2="173" />
+            <line class="side-tick" x1="929.5" y1="167" x2="928.5" y2="173" />
+            <g transform="rotate(-10 878 187)">
+              <path class="body" d="M879 169 C871.5 169 868.5 177 868.5 187 C868.5 197 871.5 204 879 204 Z" />
+              <rect class="scr" x="879" y="170" width="7.5" height="33" rx="3.75" />
+              <g class="scr-ui">
+                <path class="iem-facet" d="M874.2 176 C872.2 181 872.2 192 874.2 197" />
+                <circle class="cam" cx="874" cy="199" r="1.1" />
+              </g>
+            </g>
+            <g transform="rotate(10 926 187)">
+              <path class="body" d="M925 169 C932.5 169 935.5 177 935.5 187 C935.5 197 932.5 204 925 204 Z" />
+              <rect class="scr" x="917.5" y="170" width="7.5" height="33" rx="3.75" />
+              <g class="scr-ui">
+                <path class="iem-facet" d="M929.8 176 C931.8 181 931.8 192 929.8 197" />
+              </g>
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[5]} y1="204.5" x2={cx2[5]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[5]},200.5 ${cx2[5] + 3.5},204.5 ${cx2[5]},208.5 ${cx2[5] - 3.5},204.5`} />
+          <text class="tk" x={cx2[5]} y="234">13</text>
+        </g>
+
+        <!-- 14 水月雨竹三（豆状金属腔体 + 0.78双针绕耳 + 内凹面板） -->
+        <g class="dev" tabindex="0" role="button" data-i="13" aria-label={`${devices[13].kind} ${devices[13].name}`}>
+          <rect class="hit" x={hit2[6][0]} y="114" width={hit2[6][1]} height="128" />
+          <g class="lift">
+            <path class="ear-wire" d="M998 144 C1000 129 1016 128 1020 144 C1023 158 1016 186 1007 204" />
+            <rect class="body" x="995.5" y="143.5" width="5" height="6" rx="1" transform="rotate(-14 998 146.5)" />
+            <!-- 导管与硅胶耳套 -->
+            <path class="body" d="M984 167 L979 170 L981 174 L986 171 Z" />
+            <ellipse class="scr" cx="977.5" cy="173" rx="4.2" ry="5.6" transform="rotate(-30 977.5 173)" />
+            <!-- 豆状流线型金属腔体 -->
+            <path class="body" d="M987 155 C988 147 1001 146 1007 154 C1012 161 1009 172 1001 178 C994 183 984 179 983 170 C982 163 986 160 987 155 Z" />
+            <g class="scr-ui">
+              <path class="iem-facet" d="M990 156 C992 151 1001 151 1004 157 C1006 163 1002 171 996 173 C990 174 987 169 988 163 Z" />
+              <path class="band-arc" d="M993 166 Q996 160 1000 157 M995 166 Q998 164 1001 163" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[6]} y1="204.5" x2={cx2[6]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[6]},200.5 ${cx2[6] + 3.5},204.5 ${cx2[6]},208.5 ${cx2[6] - 3.5},204.5`} />
+          <text class="tk" x={cx2[6]} y="234">14</text>
+        </g>
+
+        <!-- 15 原道悔恨之泪 -->
+        <g class="dev" tabindex="0" role="button" data-i="14" aria-label={`${devices[14].kind} ${devices[14].name}`}>
+          <rect class="hit" x={hit2[7][0]} y="114" width={hit2[7][1]} height="128" />
+          <g class="lift">
+            <!-- 经典 MX500 平头塞圆腔 + 直柄 + 垂落耳机线 -->
+            <path class="ear-wire" d="M1092 184 V196 C1092 203 1106 204 1114 204" />
+            <path class="body" d="M1089.5 163 H1094.5 V184 H1089.5 Z" />
+            <circle class="body" cx="1092" cy="152" r="12" />
+            <g class="scr-ui">
+              <circle class="iem-facet" cx="1092" cy="152" r="8" />
+              <circle class="cam" cx="1092" cy="152" r="1.5" />
+            </g>
+          </g>
+          <line class="tk-line" x1={cx2[7]} y1="204.5" x2={cx2[7]} y2="216" />
+          <polygon class="tk-star" points={`${cx2[7]},200.5 ${cx2[7] + 3.5},204.5 ${cx2[7]},208.5 ${cx2[7] - 3.5},204.5`} />
+          <text class="tk" x={cx2[7]} y="234">15</text>
+        </g>
+      </svg>
+      {cx2.map((c, k) => <i class="snap" style={`left:${((c / 1168) * 100).toFixed(3)}%`} data-i={k + 7} />)}
+    </div>
+  </div>
+
   <nav class="devs mono" aria-label="设备索引">
     {devices.map((d, k) => (
       <button type="button" class="dev-btn" data-i={k} aria-pressed={k === 0}>
-        <span class="no" aria-hidden="true">{String(k + 1).padStart(2, '0')}</span>{d.kind}
+        <span class="no" aria-hidden="true">{String(k + 1).padStart(2, '0')}</span>{shortLabel(d.name)}
       </button>
     ))}
   </nav>
+
+  <!-- 移动端：双排裸线比例刻度尺 (15件) -->
+  <div class="m-scale" aria-label="器物比例索引">
+    <svg class="m-scale-svg" viewBox="0 0 340 128" role="group" aria-label="15件器物比例轮廓">
+      <line class="ms-line" x1="0" y1="50.5" x2="340" y2="50.5" />
+      <g class="ms-dev on" role="button" tabindex="0" data-i="0" aria-label={`01 ${devices[0].kind}`}>
+        <rect class="ms-hit" x="2" y="2" width="104" height="62" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="10" y="6" width="84" height="42" rx="2" />
+          <rect class="ms-base" x="6" y="48" width="92" height="2" rx="1" />
+        </g>
+        <text class="ms-no" x="52" y="62">01</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="1" aria-label={`02 ${devices[1].kind}`}>
+        <rect class="ms-hit" x="107" y="6" width="70" height="58" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="113" y="14" width="58" height="36" rx="2.5" />
+        </g>
+        <text class="ms-no" x="142" y="62">02</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="2" aria-label={`03 ${devices[2].kind}`}>
+        <rect class="ms-hit" x="178" y="6" width="42" height="58" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="185" y="13" width="27" height="37" rx="1.8" />
+          <rect class="ms-sub" x="188.5" y="17" width="20" height="27" rx="0.5" />
+        </g>
+        <text class="ms-no" x="198.5" y="62">03</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="3" aria-label={`04 ${devices[3].kind}`}>
+        <rect class="ms-hit" x="221" y="10" width="28" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="227" y="20" width="16" height="30" rx="2.2" />
+        </g>
+        <text class="ms-no" x="235" y="62">04</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="4" aria-label={`05 ${devices[4].kind}`}>
+        <rect class="ms-hit" x="250" y="6" width="30" height="58" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="256" y="14" width="18" height="36" rx="2.5" />
+        </g>
+        <text class="ms-no" x="265" y="62">05</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="5" aria-label={`06 ${devices[5].kind}`}>
+        <rect class="ms-hit" x="281" y="6" width="30" height="58" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="287" y="14" width="18" height="36" rx="2.5" />
+        </g>
+        <text class="ms-no" x="296" y="62">06</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="6" aria-label={`07 ${devices[6].kind}`}>
+        <rect class="ms-hit" x="312" y="10" width="26" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-sub" x="321.5" y="22" width="5" height="28" rx="1.2" />
+          <rect class="ms-body" x="319.5" y="30" width="9" height="12" rx="2.2" />
+        </g>
+        <text class="ms-no" x="324" y="62">07</text>
+      </g>
+
+      <!-- 第二排 08–15 -->
+      <line class="ms-line" x1="0" y1="108.5" x2="340" y2="108.5" />
+      <g class="ms-dev" role="button" tabindex="0" data-i="7" aria-label={`08 ${devices[7].kind}`}>
+        <rect class="ms-hit" x="2" y="72" width="68" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="6" y="84" width="60" height="24" rx="2" />
+        </g>
+        <text class="ms-no" x="36" y="122">08</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="8" aria-label={`09 ${devices[8].kind}`}>
+        <rect class="ms-hit" x="72" y="72" width="64" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="76" y="86" width="56" height="22" rx="1.5" />
+        </g>
+        <text class="ms-no" x="104" y="122">09</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="9" aria-label={`10 ${devices[9].kind}`}>
+        <rect class="ms-hit" x="138" y="72" width="42" height="54" />
+        <g class="ms-fig">
+          <path class="ms-body" d="M148 86 H170 L175 106 C175 108 171 109 169 106 L166 100 H152 L149 106 C147 109 143 108 143 106 Z" />
+        </g>
+        <text class="ms-no" x="159" y="122">10</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="10" aria-label={`11 ${devices[10].kind}`}>
+        <rect class="ms-hit" x="182" y="72" width="34" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="186" y="90" width="26" height="18" rx="1.5" />
+        </g>
+        <text class="ms-no" x="199" y="122">11</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="11" aria-label={`12 ${devices[11].kind}`}>
+        <rect class="ms-hit" x="218" y="72" width="28" height="54" />
+        <g class="ms-fig">
+          <rect class="ms-body" x="224" y="90" width="16" height="18" rx="6" />
+        </g>
+        <text class="ms-no" x="232" y="122">12</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="12" aria-label={`13 ${devices[12].kind}`}>
+        <rect class="ms-hit" x="248" y="72" width="28" height="54" />
+        <g class="ms-fig">
+          <path class="ms-body" style="fill:none" d="M254 100 C254 90 258 88 262 88 C266 88 270 90 270 100" />
+          <rect class="ms-body" x="252.5" y="99" width="4" height="9" rx="2" transform="rotate(-10 254.5 103.5)" />
+          <rect class="ms-body" x="267.5" y="99" width="4" height="9" rx="2" transform="rotate(10 269.5 103.5)" />
+        </g>
+        <text class="ms-no" x="262" y="122">13</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="13" aria-label={`14 ${devices[13].kind}`}>
+        <rect class="ms-hit" x="278" y="72" width="28" height="54" />
+        <g class="ms-fig">
+          <path class="ms-body" d="M289 91 C293 88 299 90 298 96 C298 102 293 105 288 103 C285 101 285 95 289 91 Z" />
+          <path class="ms-body" style="fill:none" d="M294 90 C296 85 301 86 301 94" />
+        </g>
+        <text class="ms-no" x="292" y="122">14</text>
+      </g>
+      <g class="ms-dev" role="button" tabindex="0" data-i="14" aria-label={`15 ${devices[14].kind}`}>
+        <rect class="ms-hit" x="308" y="72" width="30" height="54" />
+        <g class="ms-fig">
+          <circle class="ms-body" cx="323" cy="92" r="5" />
+          <rect class="ms-sub" x="321.5" y="97" width="3" height="11" rx="0.8" />
+        </g>
+        <text class="ms-no" x="323" y="122">15</text>
+      </g>
+    </svg>
+  </div>
   <script type="application/json" id="dev-data" set:html={JSON.stringify(devices)} />
 </div>

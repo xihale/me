@@ -4,6 +4,7 @@ import '@fontsource/noto-serif-sc/latin-500.css';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/global.css';
+import '../styles/mobile.css';
 
 const { title, description } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -25,35 +26,12 @@ const fontCss = (w: 300 | 500) => `${base}/fonts/noto-serif-sc/${w}/result.css`;
     <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>
-    <div class="night" aria-hidden="true">
-      <i class="star a"></i>
-      <i class="star b"></i>
-      <i class="star c"></i>
-      <i class="star d"></i>
-      <i class="star e"></i>
-      <i class="star f"></i>
-      <i class="star g"></i>
-      <i class="star h"></i>
-      <i class="star i"></i>
-      <i class="star j"></i>
-      <i class="star k"></i>
-      <i class="star l"></i>
-      <i class="star m"></i>
-      <i class="streak s"></i>
-      <i class="streak t"></i>
-      <i class="streak u"></i>
-      <i class="streak v"></i>
-      <i class="streak w"></i>
-      <i class="streak x"></i>
-      <i class="streak y"></i>
-      <i class="streak z"></i>
-      <i class="streak aa"></i>
-      <i class="streak shoot"></i>
-      <i class="streak shoot2"></i>
-      <i class="streak shoot3"></i>
-      <i class="streak shoot4"></i>
-      <i class="streak shoot5"></i>
-    </div>
+    <!-- 夜幕:canvas 星场,种子确定、三层视差、偶发流星(见 scripts/night.ts) -->
+    <canvas class="night" aria-hidden="true"></canvas>
     <slot />
+    <script>
+      import { initNight } from '../scripts/night';
+      initNight();
+    </script>
   </body>
 </html>

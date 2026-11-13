@@ -1,0 +1,93 @@
+---
+import { poems, quotes, type Poem } from '../data/excerpts';
+import { asset } from '../data/asset';
+import Star from './Star.astro';
+
+const vlen = (s: string) =>
+  [...s].reduce((w, ch) => w + (ch.charCodeAt(0) > 255 ? 1 : 0.6), 0);
+const poemH = (p: Poem) =>
+  `${(Math.max(...p.lines.map(vlen)) * 1.34 + 1.8).toFixed(2)}em`;
+
+const totalCards = poems.length + quotes.length;
+---
+
+<div class="m-excerpts" id="m-deck">
+  <div class="m-folio-track" id="m-deck-track" role="region" aria-label="摘抄册页">
+    {poems.map((p, i) => (
+      <figure class="plate m-folio m-folio-poem" data-card={i}>
+        <div class="m-folio-center">
+          <div class="ptext" style={`height:${poemH(p)}`}>
+            {p.lines.map((l) => <span class="pline">{l}</span>)}
+          </div>
+        </div>
+        <figcaption class="pby">
+          <b>{p.title}</b>
+          <i class="mono">{p.author}</i>
+        </figcaption>
+      </figure>
+    ))}
+    {quotes.map((q, j) => (
+      <figure class="plate m-folio m-folio-quote" data-card={poems.length + j}>
+        <div class="m-folio-center">
+          <p class="qtext">{q.text}</p>
+        </div>
+        <figcaption class="qfrom mono">—— {q.from}</figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <div class="m-folio-foot">
+    <div class="m-folio-dots" role="tablist" aria-label="页码">
+      {Array.from({ length: totalCards }, (_, k) => (
+        <button
+          type="button"
+          class:list={['m-folio-dot', { on: k === 0 }]}
+          data-card={k}
+          aria-label={`第 ${k + 1} 则`}
+        />
+      ))}
+    </div>
+    <div class="m-folio-more mono">
+      <a href={asset('poems')}>诗词 <Star /></a>
+      <a href={asset('quotes')}>句子 <Star /></a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const track = document.getElementById('m-deck-track');
+  const dots = Array.from(document.querySelectorAll<HTMLElement>('.m-folio-dot'));
+  const cards = Array.from(track?.querySelectorAll<HTMLElement>('.m-folio') ?? []);
+
+  if (track && dots.length && cards.length) {
+    let raf = 0;
+    track.addEventListener(
+      'scroll',
+      () => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const left = track.scrollLeft;
+          let best = 0;
+          let min = Infinity;
+          cards.forEach((c, i) => {
+            const d = Math.abs(c.offsetLeft - left);
+            if (d < min) {
+              min = d;
+              best = i;
+            }
+          });
+          dots.forEach((dot, k) => dot.classList.toggle('on', k === best));
+        });
+      },
+      { passive: true },
+    );
+
+    dots.forEach((dot, k) => {
+      dot.addEventListener('click', () => {
+        const card = cards[k];
+        if (card) track.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+      });
+    });
+  }
+</script>

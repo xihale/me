@@ -3,6 +3,10 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cabinet from '../components/Cabinet.astro';
+import MobileMusic from '../components/MobileMusic.astro';
+import MobileExcerpts from '../components/MobileExcerpts.astro';
+import MobileNav from '../components/MobileNav.astro';
+import Star from '../components/Star.astro';
 import { anime, bgm, bgmUser, devices } from '../data/status';
 import { songs, songUrl, likedUrl } from '../data/music';
 import { asset } from '../data/asset';
@@ -47,34 +51,30 @@ const SECTIONS = [
 
   <main id="top" class="home">
     <section class="hero">
-      <!-- 星轨:一条连贯的尾迹,穿过节点后沿左边落到画面底 -->
+      <!-- 星轨:单段解析三次贝塞尔尾迹,自夜空潜入并竖直切入左侧脊线 -->
       <svg class="sky" aria-hidden="true">
         <defs>
-          <linearGradient id="rail-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="var(--accent)" stop-opacity="0"/>
-            <stop offset="0.2" stop-color="var(--accent)" stop-opacity="0.4"/>
-            <stop offset="1" stop-color="var(--accent)" stop-opacity="0.82"/>
+          <linearGradient id="rail-glow-grad" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
+            <stop offset="16%" stop-color="var(--accent)" stop-opacity="0.09"/>
+            <stop offset="68%" stop-color="var(--accent)" stop-opacity="0.24"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.05"/>
+          </linearGradient>
+          <linearGradient id="rail-grad" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity="0"/>
+            <stop offset="13%" stop-color="var(--accent)" stop-opacity="0.32"/>
+            <stop offset="58%" stop-color="var(--accent)" stop-opacity="0.66"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.82"/>
           </linearGradient>
         </defs>
-        <path class="rail-glow" fill="none"/>
-        <path class="rail" fill="none" stroke="url(#rail-grad)"/>
+        <path class="rail-glow" pathLength="1" fill="none" stroke="url(#rail-glow-grad)"/>
+        <path class="rail" pathLength="1" fill="none" stroke="url(#rail-grad)"/>
       </svg>
-      <!-- 左上空白域流星雨:平行短流星自右上入场,向左下坠落、域内消散 -->
-      <div class="shower" aria-hidden="true">
-        <i style="--l:82%; --w:64px; --fy:400px; --o:.7; --d:3.2s; --dl:0s"></i>
-        <i style="--l:58%; --w:44px; --fy:340px; --o:.55; --d:3.9s; --dl:1.1s"></i>
-        <i style="--l:92%; --w:76px; --fy:420px; --o:.75; --d:2.9s; --dl:2.2s"></i>
-        <i style="--l:38%; --w:36px; --fy:300px; --o:.5; --d:4.4s; --dl:3s"></i>
-        <i style="--l:70%; --w:56px; --fy:380px; --o:.65; --d:3.5s; --dl:3.9s"></i>
-        <i style="--l:86%; --w:46px; --fy:360px; --o:.6; --d:4.1s; --dl:5s"></i>
-        <i style="--l:50%; --w:34px; --fy:320px; --o:.45; --d:4.7s; --dl:6s"></i>
-        <i style="--l:76%; --w:58px; --fy:400px; --o:.65; --d:3.3s; --dl:6.8s"></i>
-        <i style="--l:95%; --w:38px; --fy:350px; --o:.52; --d:5.2s; --dl:7.6s"></i>
-        <i style="--l:64%; --w:40px; --fy:360px; --o:.5; --d:3.7s; --dl:1.8s"></i>
-        <i style="--l:90%; --w:48px; --fy:390px; --o:.58; --d:3.1s; --dl:4.6s"></i>
-        <i style="--l:44%; --w:32px; --fy:310px; --o:.44; --d:4.2s; --dl:5.7s"></i>
-      </div>
       <div class="wrap">
+        <div class="m-masthead" aria-hidden="true">
+          <span class="m-brand">橱窗</span>
+          <span class="mono">01 — 05</span>
+        </div>
         <div class="who">
           <svg class="face" viewBox="56 68 288 332" aria-hidden="true">
             <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -115,19 +115,27 @@ const SECTIONS = [
             <a
               href={`#${s.id}`}
               class="row"
-              style={`--i:${i}; --dx:${['43vw', '29vw', '17.5vw', '8.5vw', '2vw'][i]}`}
+              style={`--i:${i}; --dx:${['min(38vw, 540px)', 'min(26vw, 370px)', 'min(16vw, 226px)', 'min(7.5vw, 112px)', 'min(2vw, 32px)'][i]}`}
             >
               <span class="nd" aria-hidden="true"/>
+              <span class="m-idx-no mono" aria-hidden="true">{pad2(i + 1)}</span>
               <b>{s.t}</b>
+              <span class="m-idx-line" aria-hidden="true"></span>
               <span class="en mono">{s.en}<i>{s.n}</i></span>
+              <span class="m-idx-cnt mono" aria-hidden="true">{s.n}</span>
             </a>
           ))}
         </nav>
       </div>
     </section>
-    <div class="rail-down" aria-hidden="true"></div>
 
-    <div class="wrap">
+    <div class="home-body">
+      <div class="rail-down" aria-hidden="true">
+        <span class="rail-joint"></span>
+        <span class="rail-line"></span>
+      </div>
+
+      <div class="wrap">
       <section class="sec" id="collection">
         <header class="head rv">
           <span class="no mono">01 / 05</span>
@@ -172,16 +180,16 @@ const SECTIONS = [
           <div class="aindex">
             <a class="ai-row" href={bgmUser} target="_blank" rel="noopener">
               <b>番</b><span class="en mono">ANIME</span><span class="line" aria-hidden="true"></span>
-              <span class="n mono">{anime.length}</span><span class="go mono" aria-hidden="true">↗</span>
+              <span class="n mono">{anime.length}</span><span class="go" aria-hidden="true"><Star /></span>
             </a>
             <a class="ai-row" href={asset('movies')}>
               <b>电影</b><span class="en mono">FILMS</span><span class="line" aria-hidden="true"></span>
-              <span class="n mono">{movies.length}</span><span class="go mono" aria-hidden="true">↗</span>
+              <span class="n mono">{movies.length}</span><span class="go" aria-hidden="true"><Star /></span>
             </a>
             {shelves.map(([label, anchor, items]) => (
               <a class="ai-row" href={`${asset('bangumi')}#${anchor}`}>
                 <b>{label}</b><span class="en mono">{SHELF_EN[anchor]}</span><span class="line" aria-hidden="true"></span>
-                <span class="n mono">{items.length}</span><span class="go mono" aria-hidden="true">↗</span>
+                <span class="n mono">{items.length}</span><span class="go" aria-hidden="true"><Star /></span>
               </a>
             ))}
           </div>
@@ -198,7 +206,7 @@ const SECTIONS = [
           <span class="meta mono">{songs.length} 首</span>
         </header>
         <div class="canvas">
-          <div class="tracks rv darkroom">
+          <div class="tracks rv darkroom d-only">
             {songs.slice(0, 9).map((x) => (
               <a class="track" href={songUrl(x.id)} target="_blank" rel="noopener" title={`${x.title} · ${x.artist}`}>
                 <img src={asset(`img/music/${x.id}.webp`)} alt={`${x.title} · ${x.artist}`} loading="lazy" decoding="async" width="400" height="400" />
@@ -206,8 +214,11 @@ const SECTIONS = [
               </a>
             ))}
             <a class="track more" href={likedUrl} target="_blank" rel="noopener">
-              <span class="t"><b>我喜欢的音乐</b><i>网易云歌单 ↗</i></span>
+              <span class="t"><b>我喜欢的音乐</b><i>网易云歌单 <Star /></i></span>
             </a>
+          </div>
+          <div class="m-only rv">
+            <MobileMusic />
           </div>
         </div>
       </section>
@@ -229,7 +240,7 @@ const SECTIONS = [
                   <li>
                     <a class="row" href={x.url} target="_blank" rel="noopener">
                       <span class="rno mono" aria-hidden="true">{pad2(k + 1)}</span>
-                      <span class="rname">{x.name}</span>
+                      <span class="rname">{x.name}<i class="m-feed-go" aria-hidden="true"><Star /></i></span>
                       <span class="rdesc">{x.desc}</span>
                     </a>
                   </li>
@@ -249,10 +260,10 @@ const SECTIONS = [
           <span class="meta mono">{poems.length + quotes.length} 则</span>
         </header>
         <div class="canvas">
-          <div class="plate rv">
+          <div class="plate rv d-only">
             <div class="ex-label mono">
               <span>诗词 · POEMS</span>
-              <a class="all" href={asset('poems')}>更多 ↗</a>
+              <a class="all" href={asset('poems')}>更多 <Star /></a>
             </div>
             <div class="poems">
               {poems.map((p) => (
@@ -269,7 +280,7 @@ const SECTIONS = [
             </div>
             <div class="ex-label mono">
               <span>句子 · QUOTES</span>
-              <a class="all" href={asset('quotes')}>更多 ↗</a>
+              <a class="all" href={asset('quotes')}>更多 <Star /></a>
             </div>
             <ul class="quotes">
               {quotes.map((q) => (
@@ -280,12 +291,17 @@ const SECTIONS = [
               ))}
             </ul>
           </div>
+          <div class="m-only rv">
+            <MobileExcerpts />
+          </div>
         </div>
       </section>
+      </div>
     </div>
   </main>
 
   <Footer current="home" />
+  <MobileNav sections={SECTIONS} />
   <a class="rise" href="#top" aria-label="回到顶部">
     <span class="rise-star" aria-hidden="true">
       <svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/></svg>
@@ -293,7 +309,8 @@ const SECTIONS = [
   </a>
 
   <script>
-    import { initCabinet, initHeroRail, initRise } from '../scripts/ui';
+    import { initCabinet } from '../scripts/ui';
+    import { initHeroRail, initRise } from '../scripts/rail';
     import { initChrome } from '../scripts/chrome';
 
     initCabinet();

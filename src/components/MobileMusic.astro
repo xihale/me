@@ -1,0 +1,119 @@
+---
+import { songs, songUrl, likedUrl } from '../data/music';
+import { asset } from '../data/asset';
+import Star from './Star.astro';
+
+const topSongs = songs.slice(0, 9);
+const pad2 = (n: number) => String(n).padStart(2, '0');
+---
+
+<div class="m-music" id="m-vinyl">
+  <a
+    class="m-music-stage"
+    id="mv-link"
+    href={songUrl(topSongs[0].id)}
+    target="_blank"
+    rel="noopener"
+  >
+    <img
+      class="m-music-cover"
+      id="mv-cover"
+      src={asset(`img/music/${topSongs[0].id}.webp`)}
+      alt={`${topSongs[0].title} · ${topSongs[0].artist}`}
+      width="240"
+      height="240"
+      loading="lazy"
+      decoding="async"
+    />
+    <div class="m-music-now">
+      <span class="m-music-no mono" id="mv-idx">01 / {pad2(topSongs.length)}</span>
+      <h3 class="m-music-title" id="mv-title">{topSongs[0].title}</h3>
+      <p class="m-music-artist">
+        <span id="mv-artist">{topSongs[0].artist}</span>
+        <i aria-hidden="true"><Star /></i>
+      </p>
+    </div>
+  </a>
+
+  <ol class="m-music-list" role="listbox" aria-label="轮播曲目">
+    {topSongs.map((x, k) => (
+      <li
+        class:list={['m-music-row', { on: k === 0 }]}
+        role="option"
+        aria-selected={k === 0}
+        tabindex="0"
+        data-i={k}
+        data-title={x.title}
+        data-artist={x.artist}
+        data-cover={asset(`img/music/${x.id}.webp`)}
+        data-href={songUrl(x.id)}
+      >
+        <span class="m-mr-no mono">{pad2(k + 1)}</span>
+        <span class="m-mr-title">{x.title}</span>
+        <span class="m-mr-artist">{x.artist}</span>
+      </li>
+    ))}
+  </ol>
+
+  <a class="ai-row m-music-all" href={likedUrl} target="_blank" rel="noopener">
+    <b>歌单</b>
+    <span class="en mono">PLAYLIST</span>
+    <span class="line" aria-hidden="true"></span>
+    <span class="n mono">{songs.length}</span>
+    <span class="go" aria-hidden="true"><Star /></span>
+  </a>
+</div>
+
+<script>
+  const root = document.getElementById('m-vinyl');
+  if (root) {
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('.m-music-row'));
+    const cover = document.getElementById('mv-cover') as HTMLImageElement | null;
+    const idxEl = document.getElementById('mv-idx');
+    const titleEl = document.getElementById('mv-title');
+    const artistEl = document.getElementById('mv-artist');
+    const linkEl = document.getElementById('mv-link') as HTMLAnchorElement | null;
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+
+    const select = (row: HTMLElement) => {
+      const i = Number(row.dataset.i);
+      rows.forEach((r) => {
+        r.classList.toggle('on', r === row);
+        r.setAttribute('aria-selected', String(r === row));
+      });
+      if (cover && row.dataset.cover && cover.getAttribute('src') !== row.dataset.cover) {
+        cover.classList.add('fade');
+        const nextSrc = row.dataset.cover;
+        const nextAlt = `${row.dataset.title} · ${row.dataset.artist}`;
+        setTimeout(() => {
+          cover.src = nextSrc;
+          cover.alt = nextAlt;
+          cover.classList.remove('fade');
+        }, 90);
+      }
+      if (idxEl) idxEl.textContent = `${pad2(i + 1)} / ${pad2(rows.length)}`;
+      if (titleEl) titleEl.textContent = row.dataset.title ?? '';
+      if (artistEl) artistEl.textContent = row.dataset.artist ?? '';
+      if (linkEl && row.dataset.href) linkEl.href = row.dataset.href;
+    };
+
+    const activate = (row: HTMLElement) => {
+      if (row.classList.contains('on')) {
+        const href = row.dataset.href;
+        if (href) window.open(href, '_blank', 'noopener');
+      } else {
+        select(row);
+      }
+    };
+
+    rows.forEach((row) => {
+      row.addEventListener('click', () => activate(row));
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          activate(row);
+        }
+      });
+    });
+  }
+</script>

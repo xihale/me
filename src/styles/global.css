@@ -18,11 +18,14 @@
   --max: 1280px;
   --gap: clamp(1.5rem, 3vw, 2.5rem);
   --bar: 4.25rem;
+  /* 落点:视口 24% 线。视线自然停住的高度,既不贴顶也不居中 */
+  --land: 24vh;
+  --sec-lead: clamp(3.2rem, 7vw, 5.5rem);
   color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: var(--bar); -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--land); -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: var(--sans); font-size: 1rem; line-height: 1.75; letter-spacing: 0.01em;
@@ -35,6 +38,20 @@ button { font: inherit; }
 ul, ol { margin: 0; padding: 0; list-style: none; }
 h1, h2, h3, p { margin: 0; }
 ::selection { background: var(--accent); color: var(--bg-deep); }
+/* 极细隐形滚动条:融于夜空底色,仅在交互时微弱显影 */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+::-webkit-scrollbar-thumb {
+  background: rgba(125, 123, 115, 0.22);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(163, 161, 153, 0.42); }
+::-webkit-scrollbar-thumb:active { background: rgba(110, 158, 143, 0.55); }
+@supports not selector(::-webkit-scrollbar) {
+  :root { scrollbar-width: thin; scrollbar-color: rgba(125, 123, 115, 0.28) transparent; }
+}
 :focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 :focus:not(:focus-visible) { outline: none; }
 /* 链接的键盘焦点不画方框:与悬停同一套语言,只画一条强调色细线 */
@@ -47,6 +64,14 @@ a:focus-visible {
 .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
 .mono { font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.02em; }
 .dim { color: var(--faint); }
+.star-mark {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  flex: none;
+  vertical-align: -0.08em;
+  transition: transform 0.25s ease, color 0.2s ease;
+}
 
 /* 版心:文字收窄,展墙放宽 */
 .col { margin: 0 auto; width: 100%; min-width: 0; }
@@ -58,9 +83,6 @@ a:focus-visible {
   position: fixed; inset: 0 0 auto 0; z-index: 20;
   display: flex; justify-content: space-between; align-items: center;
   height: var(--bar); padding: 0 var(--pad);
-  background: color-mix(in srgb, var(--bg) 74%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 .bar .brand { font-family: var(--serif); font-weight: 500; font-size: 1rem; letter-spacing: 0.08em; }
 .bar nav { display: flex; gap: clamp(0.85rem, 2.4vw, 1.75rem); align-items: center; font-size: 0.875rem; color: var(--muted); }
@@ -83,23 +105,38 @@ a:focus-visible {
   .bar nav { gap: 0.7rem; }
 }
 
-/* ---------- 星轨:连贯尾迹,没有中间断开的光段 ---------- */
+/* ---------- 星轨:单段解析尾迹,自夜空渐显并竖直切入脊线 ---------- */
 .sky {
   position: absolute; inset: 0; z-index: 0;
   width: 100%; height: 100%;
   pointer-events: none; overflow: hidden;
-  animation: bgIn 1.6s 0.2s both;
 }
 @keyframes bgIn { from { opacity: 0; } }
-.sky .rail, .sky .rail-glow { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.sky .rail, .sky .rail-glow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
 .sky .rail { stroke-width: 1.25; }
-.sky .rail-glow { stroke: var(--accent); stroke-width: 3.5; opacity: 0.2; filter: blur(1.5px); }
+.sky .rail-glow { stroke-width: 4; filter: blur(1.8px); }
+html.js .sky.intro .rail,
+html.js .sky.intro .rail-glow {
+  animation: railDraw 1.45s 0.22s cubic-bezier(0.24, 0.86, 0.32, 1) both;
+}
+@keyframes railDraw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
 
 /* ---------- hero ---------- */
 .hero { position: relative; min-height: calc(100svh - 4.25rem); display: flex; flex-direction: column; padding-top: var(--bar); }
 .hero .wrap {
   position: relative; width: 100%; flex: 1;
-  padding-top: clamp(2.2rem, 10vh, 6rem);
+  display: flex; flex-direction: column; justify-content: center;
+  padding-top: clamp(2rem, 7vh, 5rem);
+  padding-bottom: clamp(4.2rem, 10vh, 6.8rem);
 }
 
 /* 签名块:人像贴着右缘,名字与链接在它左边 */
@@ -131,7 +168,7 @@ a:focus-visible {
 /* ---------- 索引:自右上向左下铺开,词落在星轨经过的地方 ---------- */
 .hero-fall { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: clamp(1.4rem, 5.4vh, 3rem); }
 .hero-fall .row {
-  position: relative; display: flex; align-items: center; width: fit-content; column-gap: 0;
+  position: relative; display: flex; align-items: center; width: max-content; white-space: nowrap; column-gap: 0;
   margin-left: var(--dx, 0); padding-bottom: 0.55rem;
   opacity: 0;
   animation: fallUp 0.9s cubic-bezier(0.16, 0.8, 0.2, 1) forwards;
@@ -170,7 +207,8 @@ a:focus-visible {
 .hero-fall .row:focus-visible b { color: var(--accent); }
 .hero-fall .row:focus-visible .nd { opacity: 1; box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent) 42%, transparent); }
 .hero-fall .nd {
-  flex: none; width: 5px; height: 5px; border-radius: 50%; margin-right: 1.15rem;
+  flex: none; width: 5px; height: 5px; border-radius: 50%;
+  margin-right: 1.55rem; margin-bottom: 0.65rem;
   background: var(--accent); opacity: 0.55;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
   transition: opacity 0.45s, box-shadow 0.45s, transform 0.22s;
@@ -188,9 +226,13 @@ a:focus-visible {
 .hero-fall .en i { font-style: normal; margin-left: 0.65rem; opacity: 0.7; }
 .hero-fall .row:hover b { color: var(--accent); }
 .hero-fall .row:hover .en { color: var(--muted); }
-.hero-fall .row:hover .nd {
+.hero-fall .row:hover .nd,
+.hero-fall .row.pass .nd {
   opacity: 1;
-  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 0 13px 3px color-mix(in srgb, var(--accent) 46%, transparent);
+}
+.hero-fall .row.pass b {
+  color: color-mix(in srgb, var(--accent) 72%, var(--ink));
 }
 .hero-fall .row.depart b,
 .hero-fall .row.depart .en { opacity: 0; filter: blur(1.5px); transition: opacity 0.22s ease, filter 0.22s ease; }
@@ -213,6 +255,7 @@ a:focus-visible {
   .hero-fall .en { display: none; }
 }
 @media (min-width: 861px) and (max-height: 760px) {
+  .hero .wrap { padding-top: 1.5rem; padding-bottom: 3.4rem; }
   .hero-fall b { font-size: clamp(1.9rem, 3.4vw, 2.75rem); }
   .hero-fall { gap: clamp(1rem, 3.6vh, 1.9rem); }
   .who .face { width: clamp(6rem, 8vw, 8.5rem); }
@@ -220,7 +263,7 @@ a:focus-visible {
   .who-links { margin-top: 0.8rem; }
 }
 @media (min-width: 861px) and (max-height: 700px) {
-  .hero .wrap { padding-top: 1.2rem; }
+  .hero .wrap { padding-top: 1rem; padding-bottom: 2.8rem; }
   .hero-fall b { font-size: clamp(1.7rem, 3vw, 2.2rem); }
   .hero-fall { gap: 0.8rem; }
   .who-links { display: none; }
@@ -232,28 +275,35 @@ html.js .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .who { animation: none; opacity: 1; transform: none; }
-  .sky { animation: none; }
-  .night .shoot, .night .shoot2, .night .shoot3, .night .shoot4, .night .shoot5 { animation: none; opacity: 0; }
-  .shower i { animation: none; opacity: 0; }
+  .sky, html.js .sky.intro .rail, html.js .sky.intro .rail-glow, html.js .rail-down.intro { animation: none; }
   .rise-mark, .hero-fall .row.depart b, .hero-fall .row.depart .en, .hero-fall .nd { transition: none; }
   .hero-fall .row { animation: none; opacity: 1; transform: none; }
   .hero-fall b, .hero-fall .en, .hero-fall .nd { transition: none; }
   .hero-fall b::before, .hero-fall b::after { transition: none; animation: none; }
   h2.star-hit::before, h2.star-hit::after { animation: none; opacity: 0; }
-  .rise-star { transition: none; animation: none; }
+  .rise-star, .rise.on-rail:is(:hover, :focus-visible) .rise-star::after { transition: none; animation: none; }
   .rv, html.js .rv { opacity: 1; transform: none; transition: none; }
-  .rail-down { transform: none; }
-  .cabinet .ty { animation: none !important; width: 260px !important; }
-  .cabinet .cur { animation: none !important; }
   .bar, .tile, .tile .cv img { transition: none; }
   .poster img, .track img, .fig img { transition: none; transform: none !important; }
   .poster .tip, .fig .tip { transition: none; transform: none !important; }
 }
 
+.fly-layer {
+  position: fixed; inset: 0; z-index: 39;
+  width: 100%; height: 100%;
+  pointer-events: none; overflow: visible;
+}
+.fly-wake, .fly-wake-glow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fly-wake { stroke-width: 1.45; }
+.fly-wake-glow { stroke-width: 4.5; opacity: 0.42; filter: blur(1.8px); }
 .fly-star {
-  position: absolute; left: 0; top: 0; z-index: 40;
+  position: fixed; left: 0; top: 0; z-index: 40;
   width: 15px; height: 15px; color: var(--accent);
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 60%, transparent));
   pointer-events: none;
 }
 .fly-star svg { display: block; width: 100%; height: 100%; }
@@ -292,157 +342,97 @@ main, footer { position: relative; z-index: 1; }
 @media (max-width: 860px), (hover: none) {
   .rise { display: none; }
 }
+.home-body { position: relative; }
 .rail-down {
   position: absolute; z-index: 2; pointer-events: none;
-  left: var(--rail-x, -40px); top: calc(var(--hero-h, 100vh) - 1px); bottom: 0; width: 1.25px;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 82%, transparent), color-mix(in srgb, var(--accent) 30%, transparent));
-  /* 脊线随滚动向下生长,是贯穿全页的主轴;盒中心对齐 SVG 描边中心(变量是线中心),消掉交界错位 */
-  transform: translateX(-50%) scaleY(var(--rail-grow, 1));
-  transform-origin: top;
+  left: var(--rail-x, -40px); top: 0; bottom: 0; width: 0;
 }
-/* 弯轨落点的站台星:流星线在这里交棒给脊线 */
-.rail-down::before {
-  content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
-  width: 7px; height: 7px; background: var(--accent); opacity: 0.6;
+html.js .rail-down.intro {
+  animation: bgIn 0.65s 1.28s both;
+}
+/* 弯轨落点的站台星:流星线在这里交棒给脊线,独立于线条,绝不被纵向缩放压扁 */
+.rail-joint {
+  position: absolute; top: 0; left: 0;
+  width: 7px; height: 7px;
+  transform: translate(-50%, -50%);
+  background: var(--accent); opacity: 0.68;
   clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
 }
-@media (max-width: 860px) {
-  .rail-down {
-    display: block;
-    left: 9px;
-    opacity: 0.55;
-    transform: none;
-  }
+/* 脊线全程连贯不断线,随阅读视线向下渐次点亮,底部柔隐入页脚之上 */
+.rail-line {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 1.25px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent) 82%, transparent) 0,
+    color-mix(in srgb, var(--accent) 50%, transparent) var(--rail-lit, 180px),
+    color-mix(in srgb, var(--accent) 22%, transparent) calc(var(--rail-lit, 180px) + 180px),
+    color-mix(in srgb, var(--accent) 18%, transparent) calc(100% - 5rem),
+    transparent 100%
+  );
 }
-/* 脊线上的回顶星:悬停时光标高度亮起一颗带向上尾迹的星,点击顺线飞回顶部 */
+@media (max-width: 860px) {
+  .rail-down { display: none; }
+}
+/* 脊线上的归星:阻尼跟随光标,核心亮星 + 向下渐尖锥形彗尾 + 贴轨微晕,点击沿流星线飞回夜空 */
 .rise-star {
   position: absolute; left: 0; top: 0;
-  width: 20px; height: 20px; color: var(--accent);
+  width: 13px; height: 13px; color: #dfefe9;
   opacity: 0; pointer-events: none;
-  transform: translate(28px, var(--ry, 60vh)) translate(-50%, -50%);
-  transition: opacity 0.22s ease;
-  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 75%, transparent));
+  transform: translate3d(28px, var(--ry, 60vh), 0) translate(-50%, -50%) scale(0.86);
+  transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.2, 0.85, 0.3, 1);
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 88%, transparent));
 }
-.rise-star svg { display: block; width: 100%; height: 100%; }
+.rise-star svg { position: relative; z-index: 1; display: block; width: 100%; height: 100%; }
+/* 局部贴轨光晕:光标所在的一截脊线被星火微微映亮 */
 .rise-star::before {
-  content: ''; position: absolute; left: 50%; bottom: 98%;
-  width: 1.5px; height: 26px; transform: translateX(-50%);
-  background: linear-gradient(to top, color-mix(in srgb, var(--accent) 90%, transparent), transparent);
+  content: ''; position: absolute; left: 50%; top: -10px;
+  width: 3px; height: 76px; transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--accent) 42%, transparent) 20%,
+    color-mix(in srgb, var(--accent) 18%, transparent) 68%,
+    transparent
+  );
+  filter: blur(1.5px);
 }
+/* 向下拖曳的物理渐尖彗尾(蓄势北上),取代生硬的三角箭头帽 */
 .rise-star::after {
-  content: ''; position: absolute; left: 50%; bottom: 96%;
-  width: 8px; height: 9px; transform: translateX(-50%);
-  background: var(--accent); opacity: 0.9;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  content: ''; position: absolute; left: 50%; top: 50%;
+  width: 2px; height: 54px; transform: translateX(-50%);
+  transform-origin: top center;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: linear-gradient(
+    to bottom,
+    #e6f3ee 0%,
+    color-mix(in srgb, var(--accent) 82%, transparent) 34%,
+    transparent 100%
+  );
 }
 .rise:is(:hover, :focus-visible) .rise-star { opacity: 0; }
-/* 光标悬在真实脊线段(滚过 hero 之后)上,星才亮起;hero 区域无线,不出现 */
-.rise.on-rail:is(:hover, :focus-visible) .rise-star { opacity: 1; animation: risebob 1.3s ease-in-out infinite; }
-@keyframes risebob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
-
-/* hero 左上空白域:流星自域顶入场,向左下坠、在域内自然消散,不越曲线 */
-.shower {
-  position: absolute; z-index: 0; left: 0; top: 6vh;
-  width: min(52vw, 860px); height: min(46vh, 450px);
-  overflow: hidden; pointer-events: none;
+/* 光标悬在真实脊线段(滚过 hero 之后)上才亮起 */
+.rise.on-rail:is(:hover, :focus-visible) .rise-star {
+  opacity: 1;
+  transform: translate3d(28px, var(--ry, 60vh), 0) translate(-50%, -50%) scale(1);
 }
-.shower i {
-  position: absolute; top: -16px; left: var(--l, 60%);
-  width: var(--w, 32px); height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 55%, transparent));
-  opacity: 0;
-  animation: showerfall var(--d, 4s) linear var(--dl, 0s) infinite;
+.rise.on-rail:is(:hover, :focus-visible) .rise-star::after {
+  animation: riseTail 1.9s ease-in-out infinite;
 }
-@keyframes showerfall {
-  0% { transform: translate3d(0, 0, 0) rotate(-38deg); opacity: 0; }
-  7% { opacity: var(--o, 0.45); }
-  82% { opacity: var(--o, 0.45); }
-  100% { transform: translate3d(calc(var(--fy, 560px) * -1.27), var(--fy, 560px), 0) rotate(-38deg); opacity: 0; }
-}
-@media (max-width: 860px) {
-  .shower { display: none; }
+@keyframes riseTail {
+  0%, 100% { opacity: 0.82; transform: translateX(-50%) scaleY(0.9); }
+  50% { opacity: 1; transform: translateX(-50%) scaleY(1.08); }
 }
 
-/* 页边几颗静止的星,和一道偶尔划过的短迹 */
+/* ---------- 夜幕:一块固定画布上的星场,见 scripts/night.ts ----------
+   种子确定:每次访问同一片天;三层视差随滚动错位,reduced-motion 下只画一帧 */
 .night {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  position: fixed; inset: 0; z-index: 0;
+  display: block; width: 100%; height: 100%;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
 }
-.night .star {
-  position: absolute; width: var(--s, 3px); height: var(--s, 3px);
-  background: var(--ink); opacity: var(--o, 0.22);
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-}
-.night .star.c, .night .star.f { background: var(--accent); }
-.night .a { top: 18%; left: 2.6%; --s: 3px; --o: 0.34; }
-.night .b { top: 37%; left: 4.8%; --s: 2px; --o: 0.18; }
-.night .c { top: 63%; right: 3.2%; --s: 4px; --o: 0.4; }
-.night .d { top: 81%; left: 2.2%; --s: 2px; --o: 0.2; }
-.night .e { top: 28%; right: 8%; --s: 2px; --o: 0.16; }
-.night .f { top: 72%; right: 6.5%; --s: 3px; --o: 0.28; }
-.night .g { bottom: 11%; right: 2.4%; --s: 2px; --o: 0.18; }
-.night .h { top: 13.5%; left: 6.4%; --s: 3px; --o: 0.36; background: var(--accent); }
-.night .i { top: 11%; right: 21%; --s: 2px; --o: 0.2; }
-.night .j { top: 47%; left: 8.6%; --s: 2px; --o: 0.16; }
-.night .k { top: 56%; right: 13.5%; --s: 3px; --o: 0.26; background: var(--accent); }
-.night .l { bottom: 23%; left: 6.2%; --s: 2px; --o: 0.22; }
-.night .m { bottom: 5.5%; left: 37%; --s: 2px; --o: 0.14; }
-.night .streak {
-  position: absolute; width: var(--w, 52px); height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0.4; transform: rotate(var(--r, -32deg));
-}
-.night .s { top: 22%; right: 2.4%; --w: 68px; --r: -34deg; }
-.night .t { top: 58%; left: 1.2%; --w: 46px; --r: 42deg; opacity: 0.28; }
-/* 左上角两道静态流星线,一长一短错开 */
-.night .u { top: 10.5%; left: 2.2%; --w: 66px; --r: -34deg; opacity: 0.42; }
-.night .v { top: 8.8%; left: 11.2%; --w: 36px; --r: -24deg; opacity: 0.24; }
-.night .w { bottom: 14%; right: 9%; --w: 54px; --r: -30deg; opacity: 0.3; }
-.night .x { top: 40%; right: 16%; --w: 34px; --r: -20deg; opacity: 0.2; }
-.night .y { top: 33%; left: 5.5%; --w: 40px; --r: -26deg; opacity: 0.22; }
-.night .z { bottom: 30%; right: 3%; --w: 44px; --r: -36deg; opacity: 0.26; }
-.night .aa { top: 74%; left: 12%; --w: 30px; --r: -18deg; opacity: 0.16; }
-/* 五道流星,周期与相位全错开:右上、左上反角、右下短促、左中、顶部缓行 */
-.night .shoot { top: 14%; right: 0; --w: 84px; animation: shoot 18s ease-in-out infinite; }
-.night .shoot2 { top: 26%; left: 0; --w: 62px; animation: shoot2 23s ease-in-out 7s infinite; }
-.night .shoot3 { top: 66%; right: 4%; --w: 48px; animation: shoot3 27s ease-in-out 14s infinite; }
-.night .shoot4 { top: 44%; left: 0; --w: 56px; animation: shoot4 21s ease-in-out 3s infinite; }
-.night .shoot5 { top: 6%; right: 30%; --w: 70px; animation: shoot5 31s ease-in-out 19s infinite; }
-@keyframes shoot {
-  0%, 64% { transform: translate3d(24px, -12px, 0) rotate(-32deg); opacity: 0; }
-  72% { opacity: 0.5; }
-  88% { transform: translate3d(-7vw, 9vh, 0) rotate(-32deg); opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes shoot2 {
-  0%, 64% { transform: translate3d(-22px, -10px, 0) rotate(-150deg); opacity: 0; }
-  72% { opacity: 0.4; }
-  88% { transform: translate3d(7vw, 9vh, 0) rotate(-150deg); opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes shoot3 {
-  0%, 66% { transform: translate3d(18px, -8px, 0) rotate(-26deg); opacity: 0; }
-  73% { opacity: 0.32; }
-  86% { transform: translate3d(-6vw, 7vh, 0) rotate(-26deg); opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes shoot4 {
-  0%, 64% { transform: translate3d(-20px, -9px, 0) rotate(-38deg); opacity: 0; }
-  72% { opacity: 0.36; }
-  87% { transform: translate3d(6vw, 7vh, 0) rotate(-38deg); opacity: 0; }
-  100% { opacity: 0; }
-}
-@keyframes shoot5 {
-  0%, 66% { transform: translate3d(22px, -10px, 0) rotate(-22deg); opacity: 0; }
-  74% { opacity: 0.44; }
-  88% { transform: translate3d(-8vw, 10vh, 0) rotate(-22deg); opacity: 0; }
-  100% { opacity: 0; }
-}
-@media (max-width: 860px) {
-  .night .streak.s, .night .streak.t, .night .streak.v, .night .streak.w, .night .streak.x,
-  .night .streak.y, .night .streak.z, .night .streak.aa, .night .streak.shoot3, .night .streak.shoot5,
-  .night .b, .night .d, .night .e, .night .g, .night .i, .night .l, .night .m { display: none; }
-}
+body.below .night { opacity: 0.48; }
 
 /* ---------- sections ---------- */
 .sec { padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(4rem, 10vw, 8rem); }
@@ -453,8 +443,11 @@ main, footer { position: relative; z-index: 1; }
   grid-template-columns: minmax(7.5rem, 20fr) minmax(0, 62fr);
   column-gap: clamp(1.5rem, 3vw, 3rem);
   align-items: start;
-  padding: clamp(3.2rem, 7vw, 5.5rem) 0 clamp(4.2rem, 9vw, 7rem);
+  padding: var(--sec-lead) 0 clamp(4.2rem, 9vw, 7rem);
 }
+/* 首页章节自带顶留白:落点以标题为准,整页偏移里先减掉这段留白,
+   否则 #id 对齐的是章节盒而不是标题,标题会比黄金线低一截、正好落到屏幕正中 */
+html:has(.home) { scroll-padding-top: calc(var(--land) - var(--sec-lead)); }
 .home .sec + .sec { border-top: 1px solid var(--line); }
 .home .sec > .head {
   position: sticky;
@@ -473,6 +466,7 @@ main, footer { position: relative; z-index: 1; }
   width: calc(var(--hang-w, 24px) - 13px);
   height: 1px;
   background: color-mix(in srgb, var(--accent) 22%, var(--line));
+  transition: background-color 0.35s ease;
 }
 .home .sec > .head::after {
   content: ''; position: absolute;
@@ -480,8 +474,16 @@ main, footer { position: relative; z-index: 1; }
   top: var(--hang-y, 55%);
   width: 7px; height: 7px;
   transform: translate(-50%, -50%);
-  background: var(--accent); opacity: 0.55;
+  background: var(--accent); opacity: 0.52;
   clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.home .sec > .head.on::before {
+  background: color-mix(in srgb, var(--accent) 52%, var(--line));
+}
+.home .sec > .head.on::after {
+  opacity: 0.95;
+  transform: translate(-50%, -50%) scale(1.16);
 }
 @media (max-width: 860px) {
   .home .sec > .head::before, .home .sec > .head::after { content: none; }
@@ -504,8 +506,8 @@ main, footer { position: relative; z-index: 1; }
 .head .en { color: var(--faint); font-size: 0.6875rem; letter-spacing: 0.22em; }
 .head .meta { color: var(--faint); line-height: 1.6; }
 .head .rule { flex: 1 1 3rem; min-width: 2rem; height: 1px; align-self: center; background: var(--line); }
-.head .all { margin-left: auto; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
-.head .all:hover { color: var(--accent); border-color: var(--accent); }
+.head .all { margin-left: auto; color: var(--muted); transition: color 0.2s; }
+.head .all:hover { color: var(--accent); }
 @media (max-width: 700px) { .head .all { margin-left: 0; } }
 
 /* 组级规格线:子块标题 + 标尺线 + 计数/更多 */
@@ -522,56 +524,88 @@ main, footer { position: relative; z-index: 1; }
 }
 .head .rule, .ghead .rule { position: relative; }
 .ghead .meta { font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.02em; color: var(--faint); }
-.ghead .all { color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
-.ghead .all:is(:hover, :focus-visible) { color: var(--accent); border-color: var(--accent); }
+.ghead .all { color: var(--muted); transition: color 0.2s; }
+.ghead .all:is(:hover, :focus-visible) { color: var(--accent); }
 
 .links { display: flex; flex-wrap: wrap; gap: 0.7rem 1.6rem; margin-top: 2.2rem; color: var(--muted); }
-.links a { border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s; }
-.links a:hover { color: var(--ink); }
+.links a { transition: color 0.2s ease; }
+.links a:is(:hover, :focus-visible) { color: var(--ink); }
 
 /* ---------- 星空下的展柜 ---------- */
-.cabinet .scrollx { overflow-x: auto; overflow-y: hidden; padding-top: 1.2rem; scrollbar-width: thin; }
+.cabinet .scrollx { overflow-x: auto; overflow-y: hidden; padding-top: 1.2rem; }
+.cabinet .scrollx::-webkit-scrollbar { height: 3px; }
+@supports not selector(::-webkit-scrollbar) {
+  .cabinet .scrollx { scrollbar-width: thin; }
+}
+.cabinet .scrollx.shelf2 { padding-top: 0.3rem; }
 .cabinet svg { display: block; width: 100%; height: auto; min-width: 760px; overflow: visible; }
-.cabinet .floor { stroke: #2c2c2a; stroke-width: 1; }
-.cabinet .floor-b { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
-.cabinet .body { fill: #161615; stroke: #3a3a37; stroke-width: 1.5; transition: stroke 0.25s; }
-.cabinet .scr { fill: var(--scr); }
-.cabinet .scr.paper { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
-.cabinet .scr.ink { fill: #cfcdc2; }
-.cabinet .foot, .cabinet .foot-l { fill: var(--ink); }
-.cabinet .notch { fill: var(--bg); }
-.cabinet .spk { fill: var(--faint); }
-.cabinet .home { fill: none; stroke: var(--faint); stroke-width: 1.2; }
-.cabinet .cam { fill: var(--scr-ink); opacity: 0.5; }
-.cabinet .pop { fill: var(--bg); stroke: #3a3a37; stroke-width: 1.2; }
-.cabinet .ring { fill: none; stroke: var(--led); stroke-width: 1; opacity: 0.7; }
-.cabinet .ring2 { fill: none; stroke: var(--scr-ink); stroke-width: 0.8; opacity: 0.28; }
-.cabinet .mono-t { font: 400 11px var(--mono); fill: var(--scr-ink); }
+.cabinet .floor { stroke: var(--line); stroke-width: 1; }
+.cabinet .r-tick { stroke: color-mix(in srgb, var(--line) 85%, transparent); stroke-width: 0.75; }
+.cabinet .body {
+  fill: rgba(11, 11, 10, 0.55);
+  stroke: #40403b;
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s ease;
+}
+.cabinet .scr { fill: rgba(16, 16, 15, 0.65); stroke: #2c2c28; stroke-width: 0.65; transition: stroke 0.3s ease; }
+.cabinet .deck { fill: rgba(11, 11, 10, 0.65); stroke: #40403b; stroke-width: 1.15; transition: stroke 0.3s ease; }
+.cabinet .hinge { stroke: #2a2a26; stroke-width: 0.8; }
+.cabinet .notch { fill: var(--bg); stroke: #2c2c28; stroke-width: 0.65; }
+.cabinet .strap { fill: rgba(11, 11, 10, 0.45); stroke: #363631; stroke-width: 1; transition: stroke 0.3s ease; }
+.cabinet .pop { fill: rgba(11, 11, 10, 0.55); stroke: #40403b; stroke-width: 1; transition: stroke 0.3s ease; }
+.cabinet .side-tick { stroke: #40403b; stroke-width: 0.9; stroke-linecap: round; transition: stroke 0.3s ease; }
+.cabinet .cam { fill: #5c5c55; transition: fill 0.3s ease; }
+.cabinet .led-muted { fill: #353530; }
+.cabinet .spk { stroke: #4a4a44; stroke-width: 1.1; stroke-linecap: round; }
+.cabinet .home { fill: none; stroke: #4a4a44; stroke-width: 0.9; transition: stroke 0.3s ease; }
+.cabinet .chin-tick { stroke: #33332f; stroke-width: 0.8; stroke-linecap: round; }
+.cabinet .kb-key { fill: none; stroke: #2c2c28; stroke-width: 0.5; transition: stroke 0.3s ease; }
+.cabinet .kb-acc { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 0.65; }
+.cabinet .kb-screen { fill: rgba(16, 16, 15, 0.7); stroke: var(--accent); stroke-width: 0.65; opacity: 0.85; }
+.cabinet .kb-knob { fill: rgba(11, 11, 10, 0.8); stroke: #4a4a44; stroke-width: 0.85; transition: stroke 0.3s ease; }
+.cabinet .port { fill: #10100f; stroke: #40403b; stroke-width: 0.8; transition: stroke 0.3s ease; }
+.cabinet .ear-wire { fill: none; stroke: #42423d; stroke-width: 1; stroke-linecap: round; transition: stroke 0.3s ease; }
+.cabinet .iem-facet { fill: none; stroke: #363631; stroke-width: 0.75; transition: stroke 0.3s ease; }
+.cabinet .scr-ui { opacity: 0.46; transition: opacity 0.3s ease; }
+.cabinet .dev:hover .scr-ui, .cabinet .dev.on .scr-ui, .cabinet .dev:focus-visible .scr-ui { opacity: 1; }
+.cabinet .dev:hover .body, .cabinet .dev.on .body, .cabinet .dev:focus-visible .body,
+.cabinet .dev:hover .deck, .cabinet .dev.on .deck, .cabinet .dev:focus-visible .deck,
+.cabinet .dev:hover .pop, .cabinet .dev.on .pop, .cabinet .dev:focus-visible .pop,
+.cabinet .dev:hover .strap, .cabinet .dev.on .strap, .cabinet .dev:focus-visible .strap,
+.cabinet .dev:hover .ear-wire, .cabinet .dev.on .ear-wire, .cabinet .dev:focus-visible .ear-wire { stroke: var(--muted); }
+.cabinet .dev.on .scr, .cabinet .dev:hover .scr,
+.cabinet .dev.on .port, .cabinet .dev:hover .port,
+.cabinet .dev.on .kb-knob, .cabinet .dev:hover .kb-knob,
+.cabinet .dev.on .iem-facet, .cabinet .dev:hover .iem-facet { stroke: #52524c; }
+.cabinet .dev.on .kb-key, .cabinet .dev:hover .kb-key { stroke: #44443f; }
+.cabinet .dev.on .home, .cabinet .dev:hover .home { stroke: var(--muted); }
+.cabinet .dev.on .cam, .cabinet .dev:hover .cam { fill: var(--accent); }
+.cabinet .ring { fill: none; stroke: var(--led); stroke-width: 0.85; opacity: 0.72; }
+.cabinet .ring2 { fill: none; stroke: var(--scr-ink); stroke-width: 0.65; opacity: 0.24; }
+.cabinet .band-arc { fill: none; stroke: var(--led); stroke-width: 1.1; stroke-linecap: round; opacity: 0.85; }
+.cabinet .mono-t { font: 400 10.5px var(--mono); fill: var(--scr-ink); }
 .cabinet .mono-t .p { fill: var(--led); }
 .cabinet .mono-t .o { fill: var(--scr-ink); opacity: 0.55; }
-.cabinet .cur { fill: var(--led); animation: blink 1.1s steps(1) infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-.cabinet .ty { width: 0; animation: typing 12s steps(26, end) infinite; animation-delay: var(--d, 0s); }
-@keyframes typing {
-  0% { width: 0; }
-  14% { width: 260px; }
-  92% { width: 260px; }
-  100% { width: 0; }
-}
-.cabinet .gl { stroke: var(--line); stroke-width: 0.6; }
-.cabinet .gl-t { stroke: var(--ink); stroke-width: 1; fill: none; opacity: 0.8; }
-.cabinet .dg { font: 400 8px var(--mono); fill: var(--muted); text-anchor: middle; }
-.cabinet .poem { font: 500 8.5px var(--serif); fill: #25241f; letter-spacing: 0.1em; }
-.cabinet .pg { font: 400 6px var(--mono); fill: #7a786e; }
-.cabinet .clk { font: 300 14px var(--mono); fill: var(--scr-ink); }
-.cabinet .clk.s { font-size: 7px; }
-.cabinet .tk { font: 400 10px var(--mono); fill: var(--faint); text-anchor: middle; transition: fill 0.2s; }
+.cabinet .cur { fill: var(--led); opacity: 0.72; }
+.cabinet .gl { stroke: #2c2c28; stroke-width: 0.55; }
+.cabinet .gl-t { stroke: #52524c; stroke-width: 0.9; fill: none; }
+.cabinet .gl-cell { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 0.7; }
+.cabinet .dg { font: 400 7.5px var(--mono); fill: var(--muted); text-anchor: middle; }
+.cabinet .poem { font: 500 8.5px var(--serif); fill: var(--ink); letter-spacing: 0.14em; }
+.cabinet .pg { font: 400 5.5px var(--mono); fill: var(--faint); letter-spacing: 0.08em; }
+.cabinet .pg-rule { stroke: var(--line); stroke-width: 0.6; }
+.cabinet .clk { font: 300 13.5px var(--mono); fill: var(--scr-ink); letter-spacing: 0.03em; }
+.cabinet .clk.s { font-size: 6.8px; }
+.cabinet .tk-line { stroke: var(--line); stroke-width: 1; transition: stroke 0.25s; }
+.cabinet .tk-star { fill: var(--accent); opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.5); transition: opacity 0.25s, transform 0.25s; }
+.cabinet .tk { font: 400 9.5px var(--mono); fill: var(--faint); text-anchor: middle; letter-spacing: 0.08em; transition: fill 0.25s; }
 .cabinet .hit { fill: transparent; }
 .cabinet .dev { cursor: pointer; outline: none; }
-.cabinet .lift { transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.1, 1); }
-.cabinet .dev:hover .lift, .cabinet .dev.on .lift, .cabinet .dev:focus-visible .lift { transform: translateY(-10px); }
-.cabinet .dev:hover .body, .cabinet .dev.on .body, .cabinet .dev:focus-visible .body { stroke: var(--accent); }
-.cabinet .dev.on .tk, .cabinet .dev:hover .tk { fill: var(--accent); }
+.cabinet .dev:hover .tk, .cabinet .dev.on .tk, .cabinet .dev:focus-visible .tk { fill: var(--accent); }
+.cabinet .dev:hover .tk-line, .cabinet .dev.on .tk-line, .cabinet .dev:focus-visible .tk-line { stroke: var(--accent); }
+.cabinet .dev.on .tk-star { opacity: 0.92; transform: scale(1); }
 .cabinet .cap { display: grid; margin-bottom: 1.2rem; }
 .cabinet .cap > * { grid-area: 1 / 1; min-width: 0; }
 .cabinet .cap .sizer { display: grid; visibility: hidden; }
@@ -584,7 +618,7 @@ main, footer { position: relative; z-index: 1; }
   display: inline-flex; align-items: baseline; gap: 0.45rem;
   background: none; border: 0; border-bottom: 1px solid transparent;
   padding: 0.2rem 0; cursor: pointer;
-  font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em;
+  font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
   color: var(--faint); transition: color 0.2s, border-color 0.2s;
 }
 .cabinet .dev-btn .no { font-size: 0.6875rem; opacity: 0.75; transition: color 0.2s; }
@@ -598,6 +632,7 @@ main, footer { position: relative; z-index: 1; }
   /* 窄屏:一件一屏,标题移到图下并跟随居中 */
   .cabinet { display: flex; flex-direction: column; }
   .cabinet .devs { order: 3; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .cabinet .devs::-webkit-scrollbar { display: none; }
   .cabinet .dev-btn { flex: none; }
   .cabinet .scrollx {
     order: 1; scroll-snap-type: x proximity;
@@ -644,9 +679,8 @@ main, footer { position: relative; z-index: 1; }
   display: flex; align-items: baseline; gap: 0.6rem;
   letter-spacing: 0.12em;
 }
-.pby b { font-family: var(--serif); font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+.pby b { font-family: var(--serif); font-weight: 500; font-size: 0.95rem; }
 .pby i { font-style: normal; font-family: var(--mono); font-size: 0.78rem; color: var(--faint); letter-spacing: 0.1em; }
-.poem:is(:hover, :focus-within) .pby b { color: var(--accent); }
 
 /* 画框:细线定界,四角十字准星;摘抄整节收进框内,不再散在黑底上 */
 .plate {
@@ -671,8 +705,9 @@ main, footer { position: relative; z-index: 1; }
   color: var(--faint); font-size: 0.6875rem; letter-spacing: 0.22em;
 }
 .ex-label + .ex-label { margin-top: 2.4rem; }
-.ex-label .all { color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 2px; letter-spacing: 0.08em; transition: color 0.2s, border-color 0.2s; }
-.ex-label .all:is(:hover, :focus-visible) { color: var(--accent); border-color: var(--accent); }
+.ex-label .all { display: inline-flex; align-items: center; gap: 0.35em; color: var(--muted); letter-spacing: 0.08em; transition: color 0.2s; }
+.ex-label .all:is(:hover, :focus-visible) { color: var(--accent); }
+.ex-label .all:is(:hover, :focus-visible) .star-mark { transform: rotate(45deg) scale(1.12); }
 .plate .poems { gap: 2.8rem 4rem; margin-bottom: 2.6rem; }
 .plate .ptext {
   /* 高度由内联样式按诗的最宽一行给定,落款贴住末列 */
@@ -732,10 +767,10 @@ main, footer { position: relative; z-index: 1; }
 .ai-row .en { color: var(--faint); font-size: 0.6875rem; letter-spacing: 0.2em; }
 .ai-row .line { height: 1px; align-self: center; background: var(--line); transition: background 0.2s; }
 .ai-row .n { color: var(--muted); }
-.ai-row .go { color: var(--faint); transition: color 0.2s, transform 0.25s; }
+.ai-row .go { display: inline-flex; align-items: center; align-self: center; font-size: 0.8125rem; color: var(--faint); transition: color 0.2s, transform 0.25s; }
 .ai-row:is(:hover, :focus-visible) b, .ai-row:is(:hover, :focus-visible) .go { color: var(--accent); }
 .ai-row:is(:hover, :focus-visible) .line { background: var(--accent); }
-.ai-row:is(:hover, :focus-visible) .go { transform: translate(2px, -2px); }
+.ai-row:is(:hover, :focus-visible) .go { transform: rotate(45deg) scale(1.18); }
 .poster { position: relative; display: block; overflow: hidden; background: var(--panel); border-radius: 6px; }
 .poster img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; }
 .poster .tip, .fig .tip {
@@ -754,7 +789,7 @@ main, footer { position: relative; z-index: 1; }
 .rack.square { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 .rack.square .fig img, #albums .fig img { aspect-ratio: 1 / 1; }
 .rack .poster .tip, .rack .fig .tip { padding: 2.2rem 0.75rem 0.65rem; font-size: 0.875rem; line-height: 1.4; }
-.group { scroll-margin-top: calc(var(--bar) + 1.2rem); }
+/* 锚点落点由 html 的 scroll-padding-top 统一控制(黄金分割位) */
 .group + .group { margin-top: clamp(2.6rem, 5vw, 4.2rem); }
 .sec.paged { padding-top: clamp(3rem, 6vw, 5rem); }
 .sec.paged:first-child { padding-top: clamp(5.5rem, 12vh, 7.5rem); }
@@ -775,7 +810,9 @@ main, footer { position: relative; z-index: 1; }
 .track.more { display: grid; place-items: center; aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 6px; background: none; text-align: center; padding: 0.5rem; }
 .track.more .t { align-items: center; gap: 0.3rem; }
 .track.more .t b { font-size: 0.8125rem; }
+.track.more .t i { display: inline-flex; align-items: center; justify-content: center; gap: 0.35em; }
 .track.more:hover, .track.more:focus-visible { border-color: var(--accent); }
+.track.more:is(:hover, :focus-visible) .star-mark { color: var(--accent); transform: rotate(45deg) scale(1.15); }
 
 /* 触屏没有 hover:提示常显 */
 @media (hover: none) {

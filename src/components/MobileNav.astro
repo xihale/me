@@ -1,0 +1,122 @@
+---
+import Star from './Star.astro';
+
+interface SectionItem {
+  id: string;
+  t: string;
+  en: string;
+  n: string;
+}
+interface Props {
+  sections: SectionItem[];
+}
+const { sections } = Astro.props;
+---
+
+<div class="m-dock-backdrop" id="m-dock-backdrop"></div>
+<nav class="m-dock at-hero" id="m-dock" aria-label="章节导航">
+  <div class="m-dock-sheet" id="m-dock-sheet" aria-hidden="true">
+    <ol class="m-sheet-list">
+      {sections.map((s, i) => (
+        <li>
+          <a
+            class:list={['m-sheet-item', { on: i === 0 }]}
+            href={`#${s.id}`}
+            data-sec={s.id}
+            data-idx={i}
+            data-label={s.t}
+            data-dock-link
+          >
+            <span class="m-sh-no mono">{String(i + 1).padStart(2, '0')}</span>
+            <b class="m-sh-t">{s.t}</b>
+            <span class="m-sh-n mono">{s.n}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <a class="m-sheet-top mono" href="#top" data-dock-link>
+      <span>回到扉页</span>
+      <span aria-hidden="true"><Star /></span>
+    </a>
+  </div>
+
+  <button
+    type="button"
+    class="m-dock-trigger"
+    id="m-pill-toggle"
+    aria-expanded="false"
+    aria-controls="m-dock-sheet"
+  >
+    <span class="m-trig-star" aria-hidden="true">
+      <svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 .4 9.05 6.95 15.6 8 9.05 9.05 8 15.6 6.95 9.05.4 8 6.95 6.95Z"/></svg>
+    </span>
+    <span class="m-trig-code mono" id="m-pill-code">01</span>
+    <span class="m-trig-name" id="m-pill-name">展柜</span>
+  </button>
+</nav>
+
+<script>
+  const dock = document.getElementById('m-dock');
+  const backdrop = document.getElementById('m-dock-backdrop');
+  const sheet = document.getElementById('m-dock-sheet');
+  const toggle = document.getElementById('m-pill-toggle');
+  const codeEl = document.getElementById('m-pill-code');
+  const nameEl = document.getElementById('m-pill-name');
+
+  if (dock && backdrop && sheet && toggle && codeEl && nameEl) {
+    const items = Array.from(sheet.querySelectorAll<HTMLElement>('.m-sheet-item'));
+    const secs = items
+      .map((el) => ({ id: el.dataset.sec || '', el: document.getElementById(el.dataset.sec || '') }))
+      .filter((s): s is { id: string; el: HTMLElement } => !!s.el);
+
+    const pad2 = (n: number) => String(n).padStart(2, '0');
+    let open = false;
+
+    const setOpen = (o: boolean) => {
+      open = o;
+      dock.classList.toggle('open', o);
+      backdrop.classList.toggle('open', o);
+      toggle.setAttribute('aria-expanded', String(o));
+      sheet.setAttribute('aria-hidden', String(!o));
+    };
+
+    toggle.addEventListener('click', () => setOpen(!open));
+    backdrop.addEventListener('click', () => setOpen(false));
+    sheet.querySelectorAll('[data-dock-link]').forEach((el) => {
+      el.addEventListener('click', () => setOpen(false));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) setOpen(false);
+    });
+
+    const sync = () => {
+      const heroOut = scrollY > innerHeight * 0.52;
+      dock.classList.toggle('at-hero', !heroOut);
+      if (!heroOut && open) setOpen(false);
+
+      const line = innerHeight * 0.38;
+      let idx = 0;
+      for (let i = 0; i < secs.length; i++) {
+        if (secs[i].el.getBoundingClientRect().top <= line) idx = i;
+      }
+      codeEl.textContent = pad2(idx + 1);
+      nameEl.textContent = items[idx]?.dataset.label || '';
+      items.forEach((el, i) => el.classList.toggle('on', i === idx));
+    };
+
+    let ticking = false;
+    addEventListener(
+      'scroll',
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          sync();
+          ticking = false;
+        });
+      },
+      { passive: true },
+    );
+    sync();
+  }
+</script>

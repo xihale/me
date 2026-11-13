@@ -10,15 +10,16 @@ export function initChrome() {
   markBelow();
   addEventListener('scroll', markBelow, { passive: true });
 
-  // 左侧脊线随滚动向下生长,把「长卷推进」具象成一条线
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const grow = () => {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      const p = max > 0 ? Math.min(1, scrollY / max) : 1;
-      document.documentElement.style.setProperty('--rail-grow', (0.12 + 0.88 * p).toFixed(3));
+  // 左侧脊线随阅读视线向下点亮,底轴全程不断线,不缩放节点星芒
+  const homeBody = document.querySelector<HTMLElement>('.home-body');
+  if (homeBody && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const syncLit = () => {
+      const lit = Math.max(120, innerHeight * 0.62 - homeBody.getBoundingClientRect().top);
+      homeBody.style.setProperty('--rail-lit', `${Math.round(lit)}px`);
     };
-    grow();
-    addEventListener('scroll', grow, { passive: true });
+    syncLit();
+    addEventListener('scroll', syncLit, { passive: true });
+    addEventListener('resize', syncLit, { passive: true });
   }
 
   const navLinks = [...document.querySelectorAll<HTMLAnchorElement>('.bar nav a')].filter((a) =>
@@ -26,9 +27,12 @@ export function initChrome() {
   );
   const secs = navLinks.map((a) => document.querySelector<HTMLElement>(a.getAttribute('href')!));
   const spy = () => {
+    // 判据与落点同一把尺:章节顶边越过视口 24% 线即视为当前节点
+    const line = innerHeight * 0.24;
     let id = '';
-    for (const s of secs) if (s && s.getBoundingClientRect().top <= 80) id = s!.id;
+    for (const s of secs) if (s && s.getBoundingClientRect().top <= line) id = s.id;
     for (const a of navLinks) a.classList.toggle('on', a.getAttribute('href') === `#${id}`);
+    for (const s of secs) s?.querySelector('.head')?.classList.toggle('on', s.id === id);
   };
   spy();
   addEventListener('scroll', spy, { passive: true });

@@ -7,6 +7,14 @@ export const devices: Device[] = [
   { kind: '手机', name: 'Redmi Turbo 4 Pro' },
   { kind: '手机', name: 'HONOR 9X Pro' },
   { kind: '穿戴', name: 'HUAWEI Band 9' },
+  { kind: '键盘', name: '狼蛛 S98' },
+  { kind: '键盘', name: '长城 E50' },
+  { kind: '手柄', name: 'Google Stadia' },
+  { kind: '软路由', name: 'FriendlyElec NanoPi R3S' },
+  { kind: '耳机', name: 'iQOO TWS2' },
+  { kind: '耳机', name: '天使吉米 RITA' },
+  { kind: '耳机', name: '水月雨竹三' },
+  { kind: '耳机', name: '原道悔恨之泪' },
 ];
 
 export type Rated = { title: string; id: number; score: number };

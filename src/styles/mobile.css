@@ -1,0 +1,808 @@
+/* ==========================================================================
+   橱窗 · 掌心册页 (Mobile <= 860px)
+   去盒化、无废话标签：纯黑星幕 + 1px 制图细线 + 宋刻与等宽数字的呼吸感。
+   ========================================================================== */
+
+@media (min-width: 861px) {
+  .m-only,
+  .m-masthead,
+  .m-idx-no,
+  .m-idx-line,
+  .m-idx-cnt,
+  .m-scale,
+  .m-cap-cnt,
+  .m-feed-go,
+  .m-dock,
+  .m-dock-backdrop {
+    display: none !important;
+  }
+}
+
+@media (max-width: 860px) {
+  :root {
+    --pad: 1.35rem;
+    --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .d-only,
+  .bar[data-idle],
+  .rail-down {
+    display: none !important;
+  }
+
+  /* 扉页见星，滚入正文后夜幕悄然退后，把对比度还给铅字与细线 */
+  .night {
+    opacity: 0.85;
+  }
+
+  body.below .night {
+    opacity: 0.34;
+  }
+
+  html:has(.home) {
+    scroll-padding-top: 1.25rem;
+  }
+
+  body:has(.home) footer {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---------- 1. 扉页 (Hero)：纯黑夜空留白 + 无框人物剪影 + 5 道铅字索引线 ---------- */
+  .hero {
+    min-height: 100svh;
+    padding-top: 0;
+  }
+
+  .hero .wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: max(1.15rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(1.85rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .m-masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .m-masthead .m-brand {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+
+  .m-masthead .mono {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--faint);
+  }
+
+  /* 人物签名：彻底去掉方框与底色，让线稿自然浮在夜空里 */
+  .who {
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 0.6rem 0 0.2rem;
+  }
+
+  .who .face {
+    order: 0;
+    width: 6.4rem;
+    margin-right: -0.25rem;
+    opacity: 0.68;
+  }
+
+  .who-txt {
+    order: 1;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.42rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .who-name {
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+  }
+
+  .who-tag {
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .who-links {
+    justify-content: flex-start;
+    gap: 0.4rem 1.05rem;
+    margin-top: 0.85rem;
+    font-size: 0.78rem;
+  }
+
+  /* 五道细线目录：与归档表同源的制图线语言，克制利落 */
+  .hero-fall {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 0;
+    width: 100%;
+    border-top: 1px solid var(--line);
+  }
+
+  .hero-fall .nd,
+  .hero-fall .en,
+  .hero-fall b::before,
+  .hero-fall b::after {
+    display: none !important;
+  }
+
+  .hero-fall .row {
+    display: grid;
+    grid-template-columns: 2rem auto 1fr auto;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    width: 100%;
+    margin-left: 0 !important;
+    padding: 0.92rem 0.1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    transition: transform 150ms var(--ease-snap);
+  }
+
+  .hero-fall .row:active {
+    transform: scale(0.985);
+  }
+
+  .m-idx-no {
+    color: var(--accent);
+    font-style: italic;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+
+  .hero-fall b {
+    font-size: 1.32rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+  }
+
+  .m-idx-line {
+    height: 1px;
+    align-self: center;
+    background: color-mix(in srgb, var(--line) 65%, transparent);
+    margin: 0 0.25rem;
+  }
+
+  .m-idx-cnt {
+    color: var(--faint);
+    font-size: 0.78rem;
+  }
+
+  .hero-fall .row:active b,
+  .hero-fall .row:active .m-idx-cnt {
+    color: var(--accent);
+  }
+
+  /* ---------- 2. 章节眉题：干净利落的一行规格线 + 宋刻标题 ---------- */
+  .home .sec {
+    padding: 2.8rem 0 3.4rem;
+  }
+
+  .home .sec > .head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'no rule meta'
+      'title title en';
+    align-items: baseline;
+    gap: 0.45rem 0.75rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .home .sec > .head .no {
+    grid-area: no;
+    font-size: 0.75rem;
+  }
+
+  .home .sec > .head .rule {
+    grid-area: rule;
+    display: block;
+    align-self: center;
+  }
+
+  .home .sec > .head .meta {
+    grid-area: meta;
+    font-size: 0.75rem;
+  }
+
+  .home .sec > .head h2 {
+    grid-area: title;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+  }
+
+  .home .sec > .head .en {
+    grid-area: en;
+    align-self: end;
+    padding-bottom: 0.18rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    opacity: 0.65;
+  }
+
+  /* ---------- 3. 01 展柜：无框星空舞台 + 裸线真实比例剪影尺 ---------- */
+  .cabinet .devs {
+    display: none !important;
+  }
+
+  .cabinet .scrollx {
+    order: 1;
+    padding-top: 0.2rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  }
+
+  .cabinet .scrollx.shelf2 {
+    margin-top: 0.35rem;
+    padding-top: 0;
+  }
+
+  .cabinet .scrollx::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cabinet .stage {
+    width: calc((100vw - 2 * var(--pad)) * 2.75);
+  }
+
+  /* 无边框铭牌，与夜空融为一体 */
+  .cabinet .cap {
+    order: 2;
+    margin: 1rem 0 0;
+    padding: 0;
+  }
+
+  .cabinet .cap h3 {
+    font-size: 1.2rem;
+    line-height: 1.38;
+    margin-top: 0.28rem;
+  }
+
+  .m-cap-cnt {
+    font-size: 0.75rem;
+    color: var(--faint);
+  }
+
+  /* 裸在夜幕里的 7 器物比例刻度线，零盒子边框 */
+  .m-scale {
+    order: 3;
+    margin-top: 1.25rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .m-scale-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0 !important;
+    cursor: pointer;
+    overflow: visible;
+  }
+
+  .m-scale .ms-line {
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+
+  .m-scale .ms-hit {
+    fill: transparent;
+  }
+
+  .m-scale .ms-fig {
+    transition: transform 220ms var(--ease-snap);
+  }
+
+  .m-scale .ms-body {
+    fill: var(--bg);
+    stroke: #343430;
+    stroke-width: 1.15;
+    transition: stroke 200ms ease, fill 200ms ease;
+  }
+
+  .m-scale .ms-base,
+  .m-scale .ms-sub {
+    fill: #2c2c29;
+    transition: fill 200ms ease;
+  }
+
+  .m-scale .ms-no {
+    font: 400 8px var(--mono);
+    fill: var(--faint);
+    text-anchor: middle;
+    transition: fill 200ms ease;
+  }
+
+  .m-scale .ms-dev.on .ms-fig {
+    transform: translateY(-3px);
+  }
+
+  .m-scale .ms-dev.on .ms-body {
+    fill: rgba(110, 158, 143, 0.1);
+    stroke: var(--accent);
+    stroke-width: 1.4;
+  }
+
+  .m-scale .ms-dev.on .ms-base,
+  .m-scale .ms-dev.on .ms-sub,
+  .m-scale .ms-dev.on .ms-no {
+    fill: var(--accent);
+  }
+
+  /* ---------- 4. 02 清单：横向露边暗房画报 + 归档细线表 ---------- */
+  .block + .block {
+    margin-top: 2.3rem;
+  }
+
+  .wall-top {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.9rem;
+    margin-right: calc(-1 * var(--pad));
+    padding-right: var(--pad);
+  }
+
+  .wall-top::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wall-top .fig {
+    flex: 0 0 54vw;
+    max-width: 204px;
+    scroll-snap-align: start;
+  }
+
+  .wall-top .fig img {
+    border-radius: 3px;
+  }
+
+  .ai-row {
+    padding: 0.92rem 0.1rem;
+    column-gap: 0.85rem;
+  }
+
+  /* ---------- 5. 03 音乐：无框单封套 + 纯净铅字曲目表 ---------- */
+  .m-music {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .m-music-stage {
+    display: grid;
+    grid-template-columns: 6.4rem minmax(0, 1fr);
+    align-items: end;
+    gap: 1.1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    transition: transform 150ms var(--ease-snap);
+  }
+
+  .m-music-stage:active {
+    transform: scale(0.985);
+  }
+
+  .m-music-cover {
+    display: block;
+    width: 6.4rem;
+    height: 6.4rem;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--panel);
+    transition: opacity 160ms ease, filter 160ms ease;
+  }
+
+  .m-music-cover.fade {
+    opacity: 0.55;
+    filter: blur(2px);
+  }
+
+  .m-music-now {
+    display: flex;
+    flex-direction: column;
+    gap: 0.32rem;
+    min-width: 0;
+  }
+
+  .m-music-no {
+    color: var(--accent);
+    font-style: italic;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  .m-music-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.08rem;
+    line-height: 1.4;
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .m-music-artist {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .m-music-artist span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .m-music-artist i {
+    display: inline-flex;
+    align-items: center;
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--faint);
+    flex: none;
+  }
+
+  .m-music-list li {
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  }
+
+  .m-music-row {
+    display: grid;
+    grid-template-columns: 1.9rem minmax(0, 1.35fr) minmax(0, 0.9fr);
+    align-items: baseline;
+    column-gap: 0.65rem;
+    padding: 0.72rem 0.1rem;
+    cursor: pointer;
+    transition: color 160ms ease;
+  }
+
+  .m-mr-no {
+    font-size: 0.6875rem;
+    color: var(--faint);
+    transition: color 160ms ease;
+  }
+
+  .m-mr-title {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 160ms ease;
+  }
+
+  .m-mr-artist {
+    font-size: 0.75rem;
+    color: var(--faint);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .m-music-row.on .m-mr-no {
+    color: var(--accent);
+  }
+
+  .m-music-row.on .m-mr-title {
+    color: var(--ink);
+  }
+
+  .m-music-all {
+    margin-top: 0.35rem;
+    border-bottom: none;
+  }
+
+  /* ---------- 6. 04 订阅：疏朗批注行 ---------- */
+  #feeds .plist-lite .row {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.22rem 0.65rem;
+    padding: 0.9rem 0.1rem;
+  }
+
+  #feeds .rname {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .m-feed-go {
+    display: inline-flex;
+    align-items: center;
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--faint);
+  }
+
+  #feeds .rdesc {
+    grid-column: 2;
+    font-size: 0.8125rem;
+    line-height: 1.58;
+  }
+
+  /* ---------- 7. 05 摘抄：沿用原站 .plate 十字准星画框的横向册页 ---------- */
+  .m-excerpts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .m-folio-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.85rem;
+    margin-right: calc(-1 * var(--pad));
+    padding-right: var(--pad);
+  }
+
+  .m-folio-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .m-folio {
+    margin: 0;
+    flex: 0 0 80vw;
+    max-width: 300px;
+    height: 22rem;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.35rem 1.35rem 1.15rem;
+  }
+
+  .m-folio-center {
+    flex: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .m-folio-poem .ptext {
+    font-size: 0.92rem;
+    letter-spacing: 0.28em;
+    line-height: 2.15;
+  }
+
+  .m-folio-quote .qtext {
+    font-size: 1.15rem;
+    line-height: 1.9;
+  }
+
+  .m-folio-quote .qfrom {
+    margin-top: 0;
+    text-align: right;
+    font-size: 0.78rem;
+  }
+
+  .m-folio-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.1rem;
+  }
+
+  .m-folio-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+  }
+
+  .m-folio-dot {
+    width: 0.32rem;
+    height: 0.32rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--line);
+    cursor: pointer;
+    transition: transform 180ms var(--ease-snap), background-color 180ms ease;
+  }
+
+  .m-folio-dot.on {
+    background: var(--accent);
+    transform: scale(1.35);
+  }
+
+  .m-folio-more {
+    display: flex;
+    gap: 1.1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .m-folio-more a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+  }
+
+  /* ---------- 8. 右下角星标微签 (Origin-aware Corner Index) ---------- */
+  .m-dock-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 38;
+    background: rgba(6, 6, 6, 0.52);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .m-dock-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .m-dock {
+    position: fixed;
+    right: var(--pad);
+    bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-snap), transform 220ms var(--ease-snap);
+  }
+
+  /* 扉页本身就是总目录，在扉页完全隐去微签，画面不留一丝赘物 */
+  .m-dock.at-hero {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .m-dock.at-hero .m-dock-trigger {
+    pointer-events: none;
+  }
+
+  .m-dock-sheet {
+    min-width: 10.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--line);
+    background: rgba(12, 12, 11, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transform-origin: bottom right;
+    opacity: 0;
+    transform: scale(0.95) translateY(4px);
+    pointer-events: none;
+    transition: opacity 160ms var(--ease-snap), transform 180ms var(--ease-snap);
+  }
+
+  .m-dock.open .m-dock-sheet {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+
+  .m-sheet-list li + li {
+    border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  }
+
+  .m-sheet-item {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: baseline;
+    gap: 0.55rem;
+    padding: 0.52rem 0.05rem;
+  }
+
+  .m-sh-no {
+    font-size: 0.6875rem;
+    color: var(--faint);
+  }
+
+  .m-sh-t {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 0.92rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .m-sh-n {
+    font-size: 0.6875rem;
+    color: var(--faint);
+  }
+
+  .m-sheet-item.on .m-sh-no,
+  .m-sheet-item.on .m-sh-t {
+    color: var(--accent);
+  }
+
+  .m-sheet-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.05rem 0.15rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+  }
+
+  .m-dock-trigger {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    height: 2.25rem;
+    padding: 0 0.78rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 999px;
+    background: rgba(12, 12, 11, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 150ms var(--ease-snap), border-color 180ms ease;
+  }
+
+  .m-dock-trigger:active {
+    transform: scale(0.96);
+  }
+
+  .m-dock.open .m-dock-trigger {
+    border-color: var(--accent);
+  }
+
+  .m-trig-star {
+    width: 0.65rem;
+    height: 0.65rem;
+    color: var(--accent);
+    display: block;
+    flex: none;
+  }
+
+  .m-trig-star svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .m-trig-code {
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .m-trig-name {
+    font-family: var(--serif);
+    font-size: 0.84rem;
+    letter-spacing: 0.06em;
+  }
+}
