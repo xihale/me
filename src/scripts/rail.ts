@@ -324,35 +324,27 @@ export function initHeroRail() {
 
   const homeBody = document.querySelector<HTMLElement>('.home-body');
   const railDown = document.querySelector<HTMLElement>('.rail-down');
+  const mastEl = hero.querySelector<HTMLElement>('.m-masthead');
+  const coreStops = coreGrad?.querySelectorAll('stop');
+  const glowStops = glowGrad?.querySelectorAll('stop');
   let introPlayed = false;
 
-  const clearDesktop = () => {
-    activeModel = null;
-    document.documentElement.style.removeProperty('--rail-x');
-    svg.classList.remove('intro');
-    rail.removeAttribute('d');
-    glow.removeAttribute('d');
-    for (const r of rows) r.style.removeProperty('--dx');
-  };
-
   const layout = () => {
-    if (narrowMq.matches) {
-      clearDesktop();
-      return;
-    }
-
     const heroW = hero.clientWidth;
     const heroH = hero.clientHeight;
     if (!heroW || !heroH) return;
 
+    const narrow = narrowMq.matches;
     const heroDoc = offsetWithin(hero, null);
     const wrapLeft = wrap.offsetLeft;
     const wrapW = wrap.clientWidth;
     const fallPos = offsetWithin(fall, hero);
-    const padL = fall.offsetLeft;
+    const padL = fallPos.x - wrapLeft;
     const innerW = Math.max(240, wrapW - padL * 2);
 
-    const railX = Math.max(14, wrapLeft + Math.min(16, padL * 0.36));
+    const railX = narrow
+      ? Math.max(10, Math.min(20, padL * 0.45))
+      : Math.max(14, wrapLeft + Math.min(16, padL * 0.36));
 
     const ndCenters = rows.map((r) => {
       const nd = r.querySelector<HTMLElement>('.nd');
@@ -368,16 +360,35 @@ export function initHeroRail() {
     const yLast = ndCenters[ndCenters.length - 1].y;
     if (yLast <= y0 + 20) return;
 
-    const tailDrop = Math.max(76, Math.min(176, (yLast - y0) * 0.35));
-    const yTurn = Math.min(heroH, Math.max(yLast + 48, yLast + tailDrop));
+    const tailDrop = narrow
+      ? Math.max(44, Math.min(88, (yLast - y0) * 0.28))
+      : Math.max(76, Math.min(176, (yLast - y0) * 0.35));
+    const maxYTurn = narrow ? heroH - 18 : heroH;
+    const yTurn = Math.min(maxYTurn, Math.max(yLast + (narrow ? 34 : 48), yLast + tailDrop));
     const vSpan = Math.max(80, yTurn - y0);
 
-    const row0Width = rows[0].offsetWidth || 260;
-    const maxRightX = wrapLeft + wrapW - padL - Math.max(220, row0Width) - 8;
-    const spanX = Math.max(
-      180,
-      Math.min(innerW * 0.49, vSpan * 1.04, Math.max(220, maxRightX - railX)),
-    );
+    let spanX: number;
+    if (narrow) {
+      const rightLimit = wrapLeft + wrapW - padL - 4;
+      let maxSpan = innerW * 0.56;
+      ndCenters.forEach(({ ndOffX, y }, i) => {
+        const u = Math.max(0, (yTurn - y) / vSpan);
+        const fu = fU(u);
+        if (fu > 0.01) {
+          const rowW = rows[i].offsetWidth || 160;
+          const limit = (rightLimit - (railX - ndOffX + rowW)) / fu;
+          if (limit < maxSpan) maxSpan = limit;
+        }
+      });
+      spanX = Math.max(96, Math.min(innerW * 0.56, vSpan * 0.92, maxSpan));
+    } else {
+      const row0Width = rows[0].offsetWidth || 260;
+      const maxRightX = wrapLeft + wrapW - padL - Math.max(220, row0Width) - 8;
+      spanX = Math.max(
+        180,
+        Math.min(innerW * 0.49, vSpan * 1.04, Math.max(220, maxRightX - railX)),
+      );
+    }
 
     const xAtU = (u: number) => (u <= 0 ? railX : railX + spanX * fU(u));
     const yAtU = (u: number) => yTurn - vSpan * u;
@@ -396,10 +407,14 @@ export function initHeroRail() {
       return u;
     });
 
-    const uMaxTop = 1 + Math.max(0.05, (y0 - 46) / vSpan);
+    const topFloor = narrow && mastEl
+      ? offsetWithin(mastEl, hero).y + mastEl.offsetHeight + 12
+      : 46;
+    const uMaxTop = 1 + Math.max(0.05, (y0 - topFloor) / vSpan);
     const slopeAt1 = Math.max(1, spanX * dfU(1));
-    const uMaxRight = 1 + Math.max(0.05, (heroW - 24 - (railX + spanX)) / slopeAt1);
-    const uHead = Math.min(1.16, uMaxTop, uMaxRight);
+    const rightMargin = narrow ? 14 : 24;
+    const uMaxRight = 1 + Math.max(0.05, (heroW - rightMargin - (railX + spanX)) / slopeAt1);
+    const uHead = Math.min(narrow ? 1.42 : 1.16, uMaxTop, uMaxRight);
 
     const p0: Pt = { x: xAtU(uHead), y: yAtU(uHead) };
     const p1: Pt = {
@@ -410,37 +425,49 @@ export function initHeroRail() {
     const p3: Pt = { x: railX, y: yTurn };
 
     const d = `M${f2(p0.x)} ${f2(p0.y)} C${f2(p1.x)} ${f2(p1.y)} ${f2(p2.x)} ${f2(p2.y)} ${f2(p3.x)} ${f2(p3.y)}`
-      + (heroH > yTurn + 0.5 ? ` V${f2(heroH)}` : '');
+      + (!narrow && heroH > yTurn + 0.5 ? ` V${f2(heroH)}` : '');
 
     svg.setAttribute('viewBox', `0 0 ${heroW} ${heroH}`);
+    const gradEndY = narrow ? yTurn : heroH;
     for (const g of [coreGrad, glowGrad]) {
       if (!g) continue;
       g.setAttribute('x1', f2(p0.x));
       g.setAttribute('y1', f2(p0.y));
       g.setAttribute('x2', f2(railX));
-      g.setAttribute('y2', f2(heroH));
+      g.setAttribute('y2', f2(gradEndY));
+    }
+    if (coreStops?.length) {
+      coreStops[coreStops.length - 1].setAttribute('stop-opacity', narrow ? '0' : '0.82');
+    }
+    if (glowStops?.length) {
+      glowStops[glowStops.length - 1].setAttribute('stop-opacity', narrow ? '0' : '0.05');
     }
     glow.setAttribute('d', d);
     rail.setAttribute('d', d);
 
-    document.documentElement.style.setProperty('--rail-x', `${f2(railX)}px`);
+    if (narrow) {
+      activeModel = null;
+      document.documentElement.style.removeProperty('--rail-x');
+    } else {
+      document.documentElement.style.setProperty('--rail-x', `${f2(railX)}px`);
 
-    const bodyRef = homeBody ?? document.body;
-    document.querySelectorAll<HTMLElement>('.home .sec > .head').forEach((headEl) => {
-      const h2 = headEl.querySelector<HTMLElement>('h2');
-      if (!h2) return;
-      const headX = offsetWithin(headEl, bodyRef).x;
-      const h2InHead = offsetWithin(h2, headEl);
-      headEl.style.setProperty('--hang-w', `${f2(Math.max(10, headX - railX))}px`);
-      headEl.style.setProperty('--hang-y', `${f2(h2InHead.y + h2.offsetHeight / 2)}px`);
-    });
+      const bodyRef = homeBody ?? document.body;
+      document.querySelectorAll<HTMLElement>('.home .sec > .head').forEach((headEl) => {
+        const h2 = headEl.querySelector<HTMLElement>('h2');
+        if (!h2) return;
+        const headX = offsetWithin(headEl, bodyRef).x;
+        const h2InHead = offsetWithin(h2, headEl);
+        headEl.style.setProperty('--hang-w', `${f2(Math.max(10, headX - railX))}px`);
+        headEl.style.setProperty('--hang-y', `${f2(h2InHead.y + h2.offsetHeight / 2)}px`);
+      });
 
-    activeModel = {
-      railX, spanX, y0, yTurn, vSpan, heroW, heroH,
-      heroTop: heroDoc.y,
-      uHead, uNodes, rows,
-      xAtU, yAtU, xAtHeroY, dxdyAtHeroY,
-    };
+      activeModel = {
+        railX, spanX, y0, yTurn, vSpan, heroW, heroH,
+        heroTop: heroDoc.y,
+        uHead, uNodes, rows,
+        xAtU, yAtU, xAtHeroY, dxdyAtHeroY,
+      };
+    }
 
     if (!introPlayed) {
       introPlayed = true;

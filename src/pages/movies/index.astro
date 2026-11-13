@@ -12,30 +12,27 @@ const groups = [byStars(5), byStars(4), byStars(3)]
   .map((list, i) => [nums[i], list] as const);
 const unrated = byStars(0);
 if (unrated.length) groups.push(['朦', unrated] as const);
-const last = movies.reduce((a, b) => (a.date > b.date ? a : b));
 
 const nav = [
   { label: '首页', href: asset('') },
   ...groups.map(([label]) => ({ label, href: `#tier-${label}` })),
 ];
 ---
-<Base title="电影 · xihale" description={`豆瓣看过的电影 ${movies.length} 部，按分数分组。`}>
+<Base title="电影 · xihale" description="豆瓣看过的电影，按分数分组。">
   <Header brandHref={asset('')} nav={nav} />
 
-  <main id="top">
+  <main id="top" class="archive">
     <div class="wrap">
-      <section class="sec paged" id="all">
-        <div class="col wide">
-          <header class="head rv">
-            <span class="no mono">豆瓣</span>
-            <h2>电影</h2>
-            <p class="meta mono">共 {movies.length} 部 · 最近 {last.date}</p>
-          </header>
-          <div class="body">
+      <section class="sec" id="all">
+        <header class="head rv">
+          <h2>电影</h2>
+          <span class="rule" aria-hidden="true"></span>
+        </header>
+        <div class="tier-list">
           {groups.map(([label, list]) => (
-            <div class="group rv" id={`tier-${label}`}>
-              <h3 class="sub">{label} <span class="mono dim">{list.length} 部</span></h3>
-              <div class="rack">
+            <div class="tier rv" id={`tier-${label}`}>
+              <h3 class="tier-tag">{label}</h3>
+              <div class="rack compact">
                 {list.map((m) => (
                   <a class="fig poster" href={douban(m.id)} target="_blank" rel="noopener" title={m.name}>
                     <img src={asset(movieCover(m.id))} alt={m.name} loading="lazy" decoding="async" width="270" height="381" />
@@ -45,7 +42,6 @@ const nav = [
               </div>
             </div>
           ))}
-          </div>
         </div>
       </section>
     </div>

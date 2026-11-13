@@ -10,29 +10,24 @@ const nav = [
   { label: '诗词', href: asset('poems') },
 ];
 ---
-<Base title="句子 · xihale" description={`读到的句子,共 ${quotes.length} 句。`}>
+<Base title="句子 · xihale" description="读到的句子。">
   <Header brandHref={asset('')} nav={nav} />
 
-  <main id="top">
+  <main id="top" class="archive">
     <div class="wrap">
-      <section class="sec paged" id="all">
-        <div class="col narrow">
-          <header class="head rv">
-            <span class="no mono">摘抄</span>
-            <h2>句子</h2>
-            <p class="meta mono">共 {quotes.length} 句</p>
-          </header>
-          <div class="body">
-            <ul class="quotes rv">
-            {quotes.map((q) => (
-              <li class="quote">
-                <p class="qtext">{q.text}</p>
-                <p class="qfrom mono">—— {q.from}</p>
-              </li>
-            ))}
-          </ul>
-          </div>
-        </div>
+      <section class="sec" id="all">
+        <header class="head rv">
+          <h2>句子</h2>
+          <span class="rule" aria-hidden="true"></span>
+        </header>
+        <ul class="arch-quotes rv">
+          {quotes.map((q) => (
+            <li class="arch-quote">
+              <p class="aq-text">{q.text}</p>
+              <p class="aq-from mono">—— {q.from}</p>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   </main>

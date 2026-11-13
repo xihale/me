@@ -7,10 +7,9 @@ import MobileMusic from '../components/MobileMusic.astro';
 import MobileExcerpts from '../components/MobileExcerpts.astro';
 import MobileNav from '../components/MobileNav.astro';
 import Star from '../components/Star.astro';
-import { anime, bgm, bgmUser, devices } from '../data/status';
+import { anime, bgm, bgmUser } from '../data/status';
 import { songs, songUrl, likedUrl } from '../data/music';
 import { asset } from '../data/asset';
-import { movies } from '../data/movies';
 import { shelves } from '../data/books';
 import { feedGroups } from '../data/feeds';
 import { poems, quotes, type Poem } from '../data/excerpts';
@@ -26,14 +25,12 @@ const top = anime.filter((a) => a.score >= 9);
 const SHELF_EN: Record<string, string> = { books: 'BOOKS', games: 'GAMES', albums: 'ALBUMS' };
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
-const listCount = movies.length + anime.length + shelves.reduce((n, [, , items]) => n + items.length, 0);
-const feedCount = feedGroups.reduce((n, g) => n + g.items.length, 0);
 const SECTIONS = [
-  { id: 'collection', t: '展柜', en: 'SELECTED WORKS', n: pad2(devices.length) },
-  { id: 'list', t: '清单', en: 'CURATED LISTS', n: pad2(listCount) },
-  { id: 'music', t: '音乐', en: 'ROTATION & OST', n: pad2(songs.length) },
-  { id: 'feeds', t: '订阅', en: 'RSS & CHANNELS', n: pad2(feedCount) },
-  { id: 'excerpts', t: '摘抄', en: 'FRAGMENTS & QUOTES', n: pad2(poems.length + quotes.length) },
+  { id: 'collection', t: '展柜', en: 'SELECTED WORKS' },
+  { id: 'list', t: '清单', en: 'CURATED LISTS' },
+  { id: 'music', t: '音乐', en: 'ROTATION & OST' },
+  { id: 'feeds', t: '订阅', en: 'RSS & CHANNELS' },
+  { id: 'excerpts', t: '摘抄', en: 'FRAGMENTS & QUOTES' },
 ];
 ---
 <Base title="xihale" description="xihale 的收藏：设备、清单与订阅。">
@@ -75,57 +72,56 @@ const SECTIONS = [
           <span class="m-brand">橱窗</span>
           <span class="mono">01 — 05</span>
         </div>
-        <div class="who">
-          <svg class="face" viewBox="56 68 288 332" aria-hidden="true">
-            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M140 186 C128 130 160 92 200 92 C240 92 272 130 260 186"/>
-              <path d="M152 152 Q200 132 248 152" stroke-width="1.5"/>
-              <path d="M141 204 C142 252 168 292 200 297"/>
-              <path d="M259 204 C258 240 246 270 228 288"/>
-              <g stroke-width="3">
-                <rect x="148" y="192" width="46" height="38" rx="12"/>
-                <rect x="206" y="192" width="46" height="38" rx="12"/>
-                <path d="M194 203 Q200 199 206 203"/>
-                <path d="M148 201 L138 199 M252 201 L262 199"/>
+        <div class="hero-stage">
+          <div class="who">
+            <svg class="face" viewBox="56 68 288 332" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M140 186 C128 130 160 92 200 92 C240 92 272 130 260 186"/>
+                <path d="M152 152 Q200 132 248 152" stroke-width="1.5"/>
+                <path d="M141 204 C142 252 168 292 200 297"/>
+                <path d="M259 204 C258 240 246 270 228 288"/>
+                <g stroke-width="3">
+                  <rect x="148" y="192" width="46" height="38" rx="12"/>
+                  <rect x="206" y="192" width="46" height="38" rx="12"/>
+                  <path d="M194 203 Q200 199 206 203"/>
+                  <path d="M148 201 L138 199 M252 201 L262 199"/>
+                </g>
+                <path d="M152 180 Q170 172 192 177 M208 177 Q230 172 248 180" stroke-width="2.5"/>
+                <path d="M164 213 Q171 217 178 213 M222 213 Q229 217 236 213" stroke-width="1.5"/>
+                <path d="M201 224 Q199 245 194 252 Q200 256 207 252" stroke-width="1.5"/>
+                <path d="M187 276 Q200 280 213 276" stroke-width="2"/>
+                <path d="M176 294 V322 M224 294 V322" stroke-width="1.5"/>
+                <path d="M176 322 L200 352 L224 322"/>
+                <path d="M176 322 L156 340 M224 322 L244 340" stroke-width="1.5"/>
+                <path d="M156 340 C110 348 78 366 60 400" stroke-width="1.5"/>
+                <path d="M244 340 C290 348 322 366 340 400" stroke-width="1.5"/>
               </g>
-              <path d="M152 180 Q170 172 192 177 M208 177 Q230 172 248 180" stroke-width="2.5"/>
-              <path d="M164 213 Q171 217 178 213 M222 213 Q229 217 236 213" stroke-width="1.5"/>
-              <path d="M201 224 Q199 245 194 252 Q200 256 207 252" stroke-width="1.5"/>
-              <path d="M187 276 Q200 280 213 276" stroke-width="2"/>
-              <path d="M176 294 V322 M224 294 V322" stroke-width="1.5"/>
-              <path d="M176 322 L200 352 L224 322"/>
-              <path d="M176 322 L156 340 M224 322 L244 340" stroke-width="1.5"/>
-              <path d="M156 340 C110 348 78 366 60 400" stroke-width="1.5"/>
-              <path d="M244 340 C290 348 322 366 340 400" stroke-width="1.5"/>
-            </g>
-          </svg>
-          <div class="who-txt">
-            <p class="who-name">xihale</p>
-            <p class="who-tag">器物、声响与字句的切片</p>
-            <nav class="who-links mono" aria-label="站外链接">
-              <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub</a>
-              <a href="https://xihale.top" target="_blank" rel="noopener">Blog</a>
-              <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi</a>
-              <a href="https://x.com/xihale" target="_blank" rel="noopener">X</a>
-            </nav>
+            </svg>
+            <div class="who-txt">
+              <p class="who-name">xihale</p>
+              <p class="who-tag">器物、声响与字句的切片</p>
+              <nav class="who-links mono" aria-label="站外链接">
+                <a href="https://github.com/xihale" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://xihale.top" target="_blank" rel="noopener">Blog</a>
+                <a href="https://bgm.tv/user/xihale" target="_blank" rel="noopener">Bangumi</a>
+                <a href="https://x.com/xihale" target="_blank" rel="noopener">X</a>
+              </nav>
+            </div>
           </div>
+          <nav class="hero-fall" aria-label="页面索引">
+            {SECTIONS.map((s, i) => (
+              <a
+                href={`#${s.id}`}
+                class="row"
+                style={`--i:${i}; --dx:${['min(38vw, 540px)', 'min(26vw, 370px)', 'min(16vw, 226px)', 'min(7.5vw, 112px)', 'min(2vw, 32px)'][i]}`}
+              >
+                <span class="nd" aria-hidden="true"/>
+                <b>{s.t}</b>
+                <span class="en mono">{s.en}</span>
+              </a>
+            ))}
+          </nav>
         </div>
-        <nav class="hero-fall" aria-label="页面索引">
-          {SECTIONS.map((s, i) => (
-            <a
-              href={`#${s.id}`}
-              class="row"
-              style={`--i:${i}; --dx:${['min(38vw, 540px)', 'min(26vw, 370px)', 'min(16vw, 226px)', 'min(7.5vw, 112px)', 'min(2vw, 32px)'][i]}`}
-            >
-              <span class="nd" aria-hidden="true"/>
-              <span class="m-idx-no mono" aria-hidden="true">{pad2(i + 1)}</span>
-              <b>{s.t}</b>
-              <span class="m-idx-line" aria-hidden="true"></span>
-              <span class="en mono">{s.en}<i>{s.n}</i></span>
-              <span class="m-idx-cnt mono" aria-hidden="true">{s.n}</span>
-            </a>
-          ))}
-        </nav>
       </div>
     </section>
 
@@ -142,7 +138,6 @@ const SECTIONS = [
           <h2>展柜</h2>
           <span class="en mono">SELECTED WORKS</span>
           <span class="rule" aria-hidden="true"></span>
-          <span class="meta mono">{devices.length} 件</span>
         </header>
         <div class="canvas rv"><Cabinet /></div>
       </section>
@@ -153,14 +148,12 @@ const SECTIONS = [
           <h2>清单</h2>
           <span class="en mono">CURATED LISTS</span>
           <span class="rule" aria-hidden="true"></span>
-          <span class="meta mono">{listCount} 条</span>
         </header>
         <div class="canvas">
         <div class="block rv">
           <div class="ghead">
             <h3 class="sub">本命</h3>
             <span class="rule" aria-hidden="true"></span>
-            <span class="meta mono">{top.length} 部</span>
           </div>
           <div class="wall-top darkroom">
             {top.map((a, i) => (
@@ -180,16 +173,16 @@ const SECTIONS = [
           <div class="aindex">
             <a class="ai-row" href={bgmUser} target="_blank" rel="noopener">
               <b>番</b><span class="en mono">ANIME</span><span class="line" aria-hidden="true"></span>
-              <span class="n mono">{anime.length}</span><span class="go" aria-hidden="true"><Star /></span>
+              <span class="go" aria-hidden="true"><Star /></span>
             </a>
             <a class="ai-row" href={asset('movies')}>
               <b>电影</b><span class="en mono">FILMS</span><span class="line" aria-hidden="true"></span>
-              <span class="n mono">{movies.length}</span><span class="go" aria-hidden="true"><Star /></span>
+              <span class="go" aria-hidden="true"><Star /></span>
             </a>
-            {shelves.map(([label, anchor, items]) => (
+            {shelves.map(([label, anchor]) => (
               <a class="ai-row" href={`${asset('bangumi')}#${anchor}`}>
                 <b>{label}</b><span class="en mono">{SHELF_EN[anchor]}</span><span class="line" aria-hidden="true"></span>
-                <span class="n mono">{items.length}</span><span class="go" aria-hidden="true"><Star /></span>
+                <span class="go" aria-hidden="true"><Star /></span>
               </a>
             ))}
           </div>
@@ -203,7 +196,6 @@ const SECTIONS = [
           <h2>音乐</h2>
           <span class="en mono">ROTATION &amp; OST</span>
           <span class="rule" aria-hidden="true"></span>
-          <span class="meta mono">{songs.length} 首</span>
         </header>
         <div class="canvas">
           <div class="tracks rv darkroom d-only">
@@ -229,7 +221,6 @@ const SECTIONS = [
           <h2>订阅</h2>
           <span class="en mono">RSS &amp; CHANNELS</span>
           <span class="rule" aria-hidden="true"></span>
-          <span class="meta mono">{feedGroups.length > 1 ? `${feedGroups.length} 组 ${feedCount} 条` : `博客 × ${feedCount}`}</span>
         </header>
         <div class="canvas">
           {feedGroups.map((grp) => (
@@ -240,7 +231,7 @@ const SECTIONS = [
                   <li>
                     <a class="row" href={x.url} target="_blank" rel="noopener">
                       <span class="rno mono" aria-hidden="true">{pad2(k + 1)}</span>
-                      <span class="rname">{x.name}<i class="m-feed-go" aria-hidden="true"><Star /></i></span>
+                      <span class="rname">{x.name}</span>
                       <span class="rdesc">{x.desc}</span>
                     </a>
                   </li>
@@ -257,7 +248,6 @@ const SECTIONS = [
           <h2>摘抄</h2>
           <span class="en mono">FRAGMENTS &amp; QUOTES</span>
           <span class="rule" aria-hidden="true"></span>
-          <span class="meta mono">{poems.length + quotes.length} 则</span>
         </header>
         <div class="canvas">
           <div class="plate rv d-only">

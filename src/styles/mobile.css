@@ -6,12 +6,8 @@
 @media (min-width: 861px) {
   .m-only,
   .m-masthead,
-  .m-idx-no,
-  .m-idx-line,
-  .m-idx-cnt,
   .m-scale,
   .m-cap-cnt,
-  .m-feed-go,
   .m-dock,
   .m-dock-backdrop {
     display: none !important;
@@ -47,19 +43,19 @@
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ---------- 1. 扉页 (Hero)：纯黑夜空留白 + 无框人物剪影 + 5 道铅字索引线 ---------- */
+  /* ---------- 1. 扉页 (Hero)：署名嵌入左上弧区，人像嵌入右下弧区 ---------- */
   .hero {
-    min-height: 100svh;
+    min-height: auto;
     padding-top: 0;
   }
 
   .hero .wrap {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 1.5rem;
+    justify-content: flex-start;
+    gap: 0;
     padding-top: max(1.15rem, env(safe-area-inset-top, 0px));
-    padding-bottom: max(1.85rem, env(safe-area-inset-bottom, 0px));
+    padding-bottom: clamp(2.8rem, 7vh, 4.2rem);
   }
 
   .m-masthead {
@@ -82,78 +78,86 @@
     color: var(--faint);
   }
 
-  /* 人物签名：彻底去掉方框与底色，让线稿自然浮在夜空里 */
+  .hero-stage {
+    position: relative;
+    display: block;
+    margin-top: clamp(1.35rem, 3.8vh, 2.2rem);
+  }
+
+  /* 人物签名：文字紧贴星轨左上弯弧内侧，人像嵌入星轨右下空白（音乐/订阅/摘抄旁） */
   .who {
     position: static;
     inset: auto;
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 1rem;
-    padding: 0.6rem 0 0.2rem;
+    display: block;
+    opacity: 1;
+    transform: none;
+    animation: none;
   }
 
   .who .face {
-    order: 0;
-    width: 6.4rem;
-    margin-right: -0.25rem;
-    opacity: 0.68;
+    position: absolute;
+    right: -0.35rem;
+    bottom: -0.5rem;
+    width: clamp(7.4rem, 29vw, 11.2rem);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: faceUp 1s 0.32s cubic-bezier(0.16, 0.8, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  @keyframes faceUp {
+    to {
+      opacity: 0.62;
+      transform: none;
+    }
   }
 
   .who-txt {
-    order: 1;
+    position: relative;
+    z-index: 1;
     align-items: flex-start;
     text-align: left;
-    gap: 0.42rem;
-    padding-bottom: 0.2rem;
+    gap: 0.24rem;
+    margin-bottom: -0.45rem;
+    max-width: min(14.5rem, 56vw);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: heroUp 1s 0.2s cubic-bezier(0.16, 0.8, 0.2, 1) forwards;
   }
 
   .who-name {
-    font-size: 2rem;
+    font-size: clamp(1.85rem, 6vw, 2.5rem);
+    line-height: 1.02;
     letter-spacing: 0.04em;
   }
 
   .who-tag {
     font-size: 0.8125rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--muted);
   }
 
   .who-links {
     justify-content: flex-start;
-    gap: 0.4rem 1.05rem;
-    margin-top: 0.85rem;
-    font-size: 0.78rem;
+    gap: 0.25rem 0.72rem;
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
   }
 
-  /* 五道细线目录：与归档表同源的制图线语言，克制利落 */
+  /* 斜落星轨目录：自右上夜空穿过中段，落向左下角 */
   .hero-fall {
     flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding-bottom: 0;
-    width: 100%;
-    border-top: 1px solid var(--line);
+    padding: 0;
+    gap: clamp(1.05rem, 3.2vh, 1.85rem);
   }
 
-  .hero-fall .nd,
-  .hero-fall .en,
   .hero-fall b::before,
   .hero-fall b::after {
     display: none !important;
   }
 
   .hero-fall .row {
-    display: grid;
-    grid-template-columns: 2rem auto 1fr auto;
-    align-items: baseline;
-    column-gap: 0.75rem;
-    width: 100%;
-    margin-left: 0 !important;
-    padding: 0.92rem 0.1rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    padding-bottom: 0.35rem;
     transition: transform 150ms var(--ease-snap);
   }
 
@@ -161,34 +165,72 @@
     transform: scale(0.985);
   }
 
-  .m-idx-no {
-    color: var(--accent);
-    font-style: italic;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
+  .hero-fall .nd {
+    margin-right: clamp(0.75rem, 2.8vw, 1.25rem);
+    margin-bottom: 0.35rem;
   }
 
   .hero-fall b {
-    font-size: 1.32rem;
-    line-height: 1.2;
+    font-size: clamp(1.55rem, 5.2vw, 2.35rem);
+    line-height: 1.08;
     letter-spacing: 0.08em;
   }
 
-  .m-idx-line {
-    height: 1px;
-    align-self: center;
-    background: color-mix(in srgb, var(--line) 65%, transparent);
-    margin: 0 0.25rem;
+  .hero-fall .en {
+    margin-left: clamp(0.6rem, 2.2vw, 1.1rem);
+    font-size: clamp(0.54rem, 1.5vw, 0.625rem);
+    letter-spacing: clamp(0.1em, 0.3vw, 0.2em);
+    opacity: 0.72;
   }
 
-  .m-idx-cnt {
-    color: var(--faint);
-    font-size: 0.78rem;
-  }
-
-  .hero-fall .row:active b,
-  .hero-fall .row:active .m-idx-cnt {
+  .hero-fall .row:active b {
     color: var(--accent);
+  }
+
+  .hero-fall .row:active .nd {
+    opacity: 1;
+    box-shadow: 0 0 13px 3px color-mix(in srgb, var(--accent) 46%, transparent);
+  }
+
+  @media (max-height: 560px) {
+    .hero .wrap {
+      padding-bottom: 1.8rem;
+    }
+
+    .hero-stage {
+      margin-top: 0.85rem;
+    }
+
+    .who-tag {
+      display: none;
+    }
+
+    .who .face {
+      width: 6.4rem;
+      bottom: -0.25rem;
+    }
+
+    .hero-fall {
+      gap: 0.65rem;
+    }
+
+    .hero-fall b {
+      font-size: 1.3rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .who-txt {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .who .face {
+      animation: none;
+      opacity: 0.62;
+      transform: none;
+    }
   }
 
   /* ---------- 2. 章节眉题：干净利落的一行规格线 + 宋刻标题 ---------- */
@@ -198,10 +240,10 @@
 
   .home .sec > .head {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     grid-template-areas:
-      'no rule meta'
-      'title title en';
+      'no rule'
+      'title en';
     align-items: baseline;
     gap: 0.45rem 0.75rem;
     margin-bottom: 1.6rem;
@@ -218,11 +260,6 @@
     align-self: center;
   }
 
-  .home .sec > .head .meta {
-    grid-area: meta;
-    font-size: 0.75rem;
-  }
-
   .home .sec > .head h2 {
     grid-area: title;
     font-size: 1.6rem;
@@ -231,6 +268,7 @@
 
   .home .sec > .head .en {
     grid-area: en;
+    justify-self: end;
     align-self: end;
     padding-bottom: 0.18rem;
     font-size: 0.6rem;
@@ -287,11 +325,12 @@
   /* 裸在夜幕里的 7 器物比例刻度线，零盒子边框 */
   .m-scale {
     order: 3;
-    margin-top: 1.25rem;
-    padding-top: 0.85rem;
-    border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    margin-top: 1.1rem;
+    padding-top: 0.35rem;
     touch-action: pan-y;
+    -webkit-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .m-scale-svg {
@@ -301,6 +340,16 @@
     min-width: 0 !important;
     cursor: pointer;
     overflow: visible;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-scale .ms-dev {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .m-scale .ms-dev:focus-visible .ms-body {
+    stroke: var(--accent);
   }
 
   .m-scale .ms-line {
@@ -471,8 +520,8 @@
     flex: none;
   }
 
-  .m-music-list li {
-    border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  .m-music-list li + li {
+    border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
   }
 
   .m-music-row {
@@ -518,8 +567,7 @@
   }
 
   .m-music-all {
-    margin-top: 0.35rem;
-    border-bottom: none;
+    margin-top: 0.45rem;
   }
 
   /* ---------- 6. 04 订阅：疏朗批注行 ---------- */
@@ -527,21 +575,6 @@
     grid-template-columns: 2rem minmax(0, 1fr);
     gap: 0.22rem 0.65rem;
     padding: 0.9rem 0.1rem;
-  }
-
-  #feeds .rname {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .m-feed-go {
-    display: inline-flex;
-    align-items: center;
-    font-style: normal;
-    font-size: 0.72rem;
-    color: var(--faint);
   }
 
   #feeds .rdesc {
@@ -714,7 +747,7 @@
 
   .m-sheet-item {
     display: grid;
-    grid-template-columns: 1.6rem 1fr auto;
+    grid-template-columns: 1.6rem 1fr;
     align-items: baseline;
     gap: 0.55rem;
     padding: 0.52rem 0.05rem;
@@ -731,11 +764,6 @@
     font-size: 0.92rem;
     letter-spacing: 0.06em;
     color: var(--muted);
-  }
-
-  .m-sh-n {
-    font-size: 0.6875rem;
-    color: var(--faint);
   }
 
   .m-sheet-item.on .m-sh-no,

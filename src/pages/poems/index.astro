@@ -10,33 +10,28 @@ const nav = [
   { label: '句子', href: asset('quotes') },
 ];
 ---
-<Base title="诗词 · xihale" description={`竖排诗词摘抄,共 ${poems.length} 首,自右向左读。`}>
+<Base title="诗词 · xihale" description="诗词摘抄。">
   <Header brandHref={asset('')} nav={nav} />
 
-  <main id="top">
+  <main id="top" class="archive">
     <div class="wrap">
-      <section class="sec paged" id="all">
-        <div class="col wide">
-          <header class="head rv">
-            <span class="no mono">摘抄</span>
-            <h2>诗词</h2>
-            <p class="meta mono">共 {poems.length} 首 · 竖排,自右向左读</p>
-          </header>
-          <div class="body">
-            <div class="poems rv">
-            {poems.map((p) => (
-              <figure class="poem">
-                <div class="ptext">
-                  {p.lines.map((l) => <span class="pline">{l}</span>)}
-                </div>
-                <figcaption class="pby">
-                  <b>{p.title}</b>
-                  <i class="mono">{p.author}</i>
-                </figcaption>
-              </figure>
-            ))}
-            </div>
-          </div>
+      <section class="sec" id="all">
+        <header class="head rv">
+          <h2>诗词</h2>
+          <span class="rule" aria-hidden="true"></span>
+        </header>
+        <div class="arch-poems rv">
+          {poems.map((p) => (
+            <article class="arch-poem">
+              <header class="ap-head">
+                <b>{p.title}</b>
+                <i class="mono">{p.author}</i>
+              </header>
+              <p class="ap-lines">
+                {p.lines.map((l, i) => <>{i > 0 && <br />}{l}</>)}
+              </p>
+            </article>
+          ))}
         </div>
       </section>
     </div>

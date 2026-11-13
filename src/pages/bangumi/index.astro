@@ -8,28 +8,25 @@ import { asset } from '../../data/asset';
 <Base title="清单 · xihale" description="书、游戏与专辑收藏，完整列表（Bangumi 优先，豆瓣补充）。">
   <Header brandHref={asset('')} nav={[{ label: '首页', href: asset('') }, ...shelves.map(([label, anchor]) => ({ label, href: `#${anchor}` }))]} />
 
-  <main id="top">
+  <main id="top" class="archive">
     <div class="wrap">
       {shelves.map(([label, anchor, list]) => (
-        <section class="sec paged" id={anchor}>
-          <div class="col wide">
-            <header class="head rv">
-              <span class="no mono">收藏</span>
-              <h2>{label}</h2>
-              <p class="meta mono">{list.length} 部</p>
-            </header>
-            <div class="body rv">
-              <div class:list={['rack', { square: anchor === 'albums' }]}>
-                {byScore(list).map((x) => (
-                  <a class="fig" href={x.url} target="_blank" rel="noopener" title={x.title}>
-                    <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height={anchor === 'albums' ? '360' : '540'} />
-                    <span class="cap">
-                      <i>{x.score || '—'}</i>
-                      <b>{x.title}</b>
-                    </span>
-                  </a>
-                ))}
-              </div>
+        <section class="sec" id={anchor}>
+          <header class="head rv">
+            <h2>{label}</h2>
+            <span class="rule" aria-hidden="true"></span>
+          </header>
+          <div class="body rv">
+            <div class:list={['rack', { square: anchor === 'albums' }]}>
+              {byScore(list).map((x) => (
+                <a class="fig" href={x.url} target="_blank" rel="noopener" title={x.title}>
+                  <img src={x.img} alt={x.title} loading="lazy" decoding="async" width="360" height={anchor === 'albums' ? '360' : '540'} />
+                  <span class="cap">
+                    {x.score > 0 && <i>{x.score}</i>}
+                    <b>{x.title}</b>
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
         </section>
